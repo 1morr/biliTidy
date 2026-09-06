@@ -17,7 +17,8 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
   取關／撤銷／停下／查不到、兩種任務互斥、設定三段、繁中、手機寬度——截圖到 `.output/ui/`（不需登入。**UI 改動一律要看截圖**，不要只靠推論）
 - `npm run quickfav-preview`：假影片頁餵給真的 content script，截圖智慧收藏的 toast（淺色／深色／挑選器）
 - `npm run smoke`：Playwright 載入真的擴充功能走設定頁（需先 build；首次 `npx playwright install chromium`）
-- `npm run gen-icons`：重新產生 `public/icon/*.png`（純 Node）；`npm run mock-ai`：本機 mock OpenAI 相容端點
+- `npm run gen-icons`：由 `public/icon/icon.svg` 重新產生 `public/icon/*.png`（Playwright 內建 Chromium 轉檔；改圖示只改 SVG）；
+  `npm run mock-ai`：本機 mock OpenAI 相容端點
 - `.env`（已 gitignore，範本見 `.env.example`）只給手動測試腳本用；擴充功能本身不讀它
 
 ## 單一來源：這些規則只准有一份實作
@@ -37,6 +38,8 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 | 匯出的最後一道防線（再排除一次未知） | `core/exportRows.ts` 的 `confirmedOnly()` | UID 清單、CSV |
 | 關注審核表的分面怎麼算、怎麼篩、怎麼排 | `core/followFilter.ts` | 關注頁左軌與表格 |
 | 活躍度快取算不算新鮮（TTL 30 天、unknown 永遠不新鮮） | `core/cache.ts` 的 `isFresh()` | `checkActivity` 的 miss 判定 |
+| 關注審核表時間軸的座標（軸的範圍、年份刻度、門檻＝播放頭的位置） | `ui/pages/follows/timeline.ts` | 審核表的表頭刻度尺、每一列的軌與播放頭、可拖的 range |
+| 設定頁哪一章改過還沒存（章節軌亮起、主按鈕的數字、`.why` 的句子） | `ui/pages/settings/SettingsPage.tsx` 的 `changedFields()` | 設定頁控制列；各章只用 `saved` 比對自己的欄位畫 `dirty` 邊框 |
 | 三態分類（API 原料 → videos／noVideos／unknown） | `core/activity.ts` 的 `classifyActivity()`＋`bilibili/archive.ts` 的「錯誤一律丟例外」 | `checkActivity` |
 | 取關用哪個 act（悄悄 4、其餘 2）、撤銷要還原哪些分組（含 -10） | `core/unfollow.ts` 的 `unfollowActFor()`／`tagsToRestore()` | 取關與撤銷流程 |
 | 兩種任務一次只跑一個 | `ui/jobGuard.ts` 的 `claimJob()`／`releaseJob()` | 兩個 jobStore 的每個任務函式、兩頁的主按鈕與 `.why` |
@@ -74,12 +77,23 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 - **每個分頁的底部作業列永遠是同一件事**：你正要執行的批次，以及執行它的按鈕；按鈕變灰時旁邊一定寫得出原因（`.why`，允許換行）。
   破壞性動作（取關、撤銷、移除失效影片）一律在作業列內二次確認，不開 modal。另一種任務在跑時主按鈕變灰、`.why` 寫 `app.busyWith*`。
 - 整理頁三種畫面共用這個外殼（準備／分類中／審核），關注頁也是（準備／執行中／審核）。進度儀表是共用元件 `ui/components/ProgressPanel.tsx`
-  （讀數欄位與骨架形狀由各頁傳入），取消只在作業列。設定頁是左軌四段導覽＋一次一段。
-- 關注頁的門檻是審核表的主控，放在左軌最上面；分面的計數反映其他分面已套用之後還剩多少。關注審核表是 `table.grid.dense`
-  （列高 46px，窄視窗改成堆疊列）；整理頁與收藏夾的表格維持原樣、在 `.c-body` 裡橫向捲。
-- **視覺只有深色一套**（`color-scheme: dark`，沒有 `prefers-color-scheme` 分支），token 見 `DESIGN.md`；重點色只給選取（`tr.sel`、`.facet.on`、`.chip.on`）與主要動作。
+  （讀數欄位與骨架形狀由各頁傳入；進度軌分「已緩衝＝快取」灰段與「已播＝真的打了請求」粉段，呼叫端傳 `cached`），取消只在作業列。
+- **設定頁是六章分三組**（`ui/pages/settings/SettingsPage.tsx`）：01 AI 端點、02 給 AI 看什麼、03 分類指示＝「整理收藏 · 需要 AI」；
+  04 讀寫速度、05 快取與備份、06 語言＝「兩個工具共用」；左軌最後一列是通往關注頁的門（清理關注不用 AI）。
+  每一章開頭寫用在哪幾個功能（`SCOPE`），每個設定用 `components/fields.tsx` 的 `SettingRow`（標籤／說明／預設／控制項）；
+  **新增設定欄位時三處同步**：`SettingRow` 的 `desc`＋`def`、`changedFields()` 的比對、`docs/how-it-works.md` 的表。
+  控制列中段是章節軌（六段、缺口在 03／04 之間），改過沒存的段亮粉、目前所在的段有播放頭。
+- 關注頁的門檻是審核表的主控，放在左軌最上面；**審核表時間軸欄裡那條粉色播放頭也是它**（表頭的 range 可拖，拖了就是改設定，座標算法在
+  `ui/pages/follows/timeline.ts`）。分面的計數反映其他分面已套用之後還剩多少。關注審核表是 `table.grid.dense`
+  （列高 46px；≤1200px 先收掉時間軸欄，≤900px 改成堆疊列）；整理頁與收藏夾的表格維持原樣、在 `.c-body` 裡橫向捲。
+- **視覺只有深色一套**（`color-scheme: dark`，沒有 `prefers-color-scheme` 分支），token 見 `DESIGN.md`。粉色只給「現在／你選的／主要動作」
+  （`tr.sel`、`.facet.on`、`.chip.on`、`.btn.primary`、播放頭與進度軌的已播段）；狀態色是彈幕色板（黃＝超過門檻／草稿、綠＝還在投稿／完成、
+  紅＝失敗、淡藍＝從未投稿／告知）。**不發光、不投影**：焦點是實心邊框或 outline，沒有 box-shadow。
   淺色只留給影片頁的卡片，因為它長在 B 站自己的頁面上。
-- 圖示一律畫在 `ui/components/icons.tsx`，**不要用 emoji 或符號字元**（系統字型缺字會變豆腐方塊）。
+- 數字走內建的 Spline Sans Mono（`public/fonts/SplineSansMono.woff2`，`@font-face` 在 `styles.css`）：時間碼、計數、天數、mid、端點名。
+  介面字仍是系統堆疊；不連外抓字型。
+- 圖示一律畫在 `ui/components/icons.tsx`，**不要用 emoji 或符號字元**（系統字型缺字會變豆腐方塊）。工具列圖示的原稿是 `public/icon/icon.svg`，
+  `IconBrand` 畫同一組座標；改圖示要兩邊一起改、重跑 `npm run gen-icons`，並更新「測試視覺」的確認題（`connection.doesItMatchQuestion`）。
 - 關注的查不到列（`tr.locked`）整列退到後面、勾選框 disabled 並帶 title 說原因；已取關的列 `tr.done-row`、失敗的 `tr.failed-row`。
 
 ## 影片頁的 content script
@@ -125,8 +139,10 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 - schema 在 `core/settings.ts`（zod 4：物件預設值用 `.prefault({})`，**每個欄位都要用 `fallback()`／`optional()` 掛 `.catch()`**——一個欄位填壞不可以波及同段其他欄位）。
   四段：`ai`、`rate`（兩種任務共用）、`features`、`follows`（`thresholdDays`、`includeWhispers`）。
 - 固定值（詳情快取 30 天、封面 7 天、活躍度 30 天 `ACTIVITY_TTL_DAYS`、抖動 ±30%、撤銷每批 20 `RESTORE_BATCH_SIZE`）用同檔的常數，**不要再變成設定項**。
-- 設定頁分四段，左軌導覽一次只顯示一段：1 連線、2 要給 AI 看什麼、3 要 AI 怎麼判斷、4 速度與資料（限速三選一、兩組快取各自清、備份、語言）。
-- 關注的門檻在關注頁左軌改＝改設定；「包含悄悄關注」只在關注頁的準備畫面，**不要在設定頁再放一份**。
+- 設定頁六章分三組，左軌一次只顯示一章：01 AI 端點、02 給 AI 看什麼、03 分類指示（整理收藏 · 需要 AI）；
+  04 讀寫速度（三選一＋自己填數值）、05 快取與備份（兩組快取各自清、匯出匯入）、06 語言（兩個工具共用）。
+- 關注的門檻在關注頁左軌或審核表的播放頭改＝改設定；「包含悄悄關注」只在關注頁的準備畫面，**不要在設定頁再放一份**——
+  設定頁左軌最後一列只是一扇門，顯示目前門檻並切到關注頁。
 - 三個資料來源就是三個布林，各一個開關（原生 checkbox 換張臉：**勾選＝挑東西、開關＝改設定**）。**不要再加回「智慧」那一階**（`design.md` 3.2）。
 - 改動已存在的設定欄位時**在 `migrateLegacy` 補轉換**，別讓使用者的設定被預設值蓋掉。
 

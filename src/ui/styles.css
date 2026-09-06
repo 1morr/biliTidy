@@ -1,53 +1,69 @@
 /*
- * 深色審核工作台。四個分頁（整理收藏／收藏夾／關注／設定）共用同一組 token 與版面語法；
- * 這份 CSS 是 biliFavOrg 與 biliFollowCleaner 兩份合併後的唯一一份。
+ * 彈幕播放器的時間軸。四個分頁（整理收藏／收藏夾／關注／設定）共用同一組 token 與版面語法，
+ * 這份 CSS 是唯一一份。整個介面借用觀眾天天用的播放器語法：
  *
- * 兩條規則撐起整個版面：
- * 1. 區塊之間只用 1px 的 --line 分開，底色靠 rail / panel 兩層區分——沒有浮起來的白卡片。
- * 2. 重點色只給選取（勾選中的列、作用中的分面與 chip）、主要動作、AI 建議與焦點環；連結用淡一階的 --ac-2。
- *    狀態一律是「小色點＋文字」。
+ * 1. 影片黑的平塗底、1px 分隔線、沒有光暈與陰影——螢幕上只有內容與控制列。
+ * 2. 粉色只給「現在／你選的／主要動作」：播放頭、選取中的列、作用中的分面與 chip、主按鈕、焦點環。
+ * 3. 狀態色取自彈幕色板：黃＝安靜超過門檻／AI 草稿、綠＝還在投稿／完成、紅＝失敗、淡藍＝從未投稿／中性告知。
+ *    狀態一律是「色點＋文字」或「圖示＋文字」，顏色不是唯一訊號。
+ * 4. 底部作業列就是控制列：左邊是這一批＋執行它的按鈕，中間放進度軌或章節軌，右邊是時間碼式的讀數。
  *
- * 字體用系統堆疊（擴充功能不連外抓字型；CJK 靠 PingFang TC / Microsoft JhengHei），
- * 數量、天數、時間、請求數、bvid、mid、端點名走等寬並開 tabular-nums，讓上下列對得齊。
+ * 字型：介面字走系統堆疊（CJK 靠 PingFang TC / Microsoft JhengHei）；時間碼、計數、天數、mid、端點名
+ * 一律走內建的 Spline Sans Mono（public/fonts，OFL，可變字重）並開 tabular-nums，讓上下列對得齊。
  */
 
+@font-face {
+  font-family: 'Spline Sans Mono';
+  src: url('/fonts/SplineSansMono.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --ground: #0c0e11;
-  --rail: #111419;
-  --panel: #151920;
-  --raised: #1b2028;
-  --input-bg: #0f1216;
-  --line: #242a33;
-  --line-2: #323a45;
+  --ground: #0c0c0e;
+  --rail: #121316;
+  --panel: #0f1012;
+  --raised: #1a1b20;
+  --input-bg: #09090b;
+  --line: #24262c;
+  --line-2: #33363e;
 
-  --tx: #e9edf2;
-  --tx2: #a3adba;
-  --tx3: #7d8896;
+  --tx: #f2f3f5;
+  --tx2: #a9adb6;
+  --tx3: #8b9099;
 
-  /* B 站粉 #fb7299 在深底上只有 4.6:1，提亮到 #ff5c8d 才站得住 */
+  /* B 站粉 #fb7299 在黑底上只有 4.6:1，提亮到 #ff5c8d 才站得住；--ac-2 是粉底上的字 */
   --ac: #ff5c8d;
-  --ac-2: #ffa3bf;
-  --ac-tint: #2a161f;
-  --ac-line: rgba(255, 92, 141, 0.45);
+  --ac-2: #ffb0c8;
+  --ac-tint: rgba(255, 92, 141, 0.14);
+  --ac-line: rgba(255, 92, 141, 0.5);
+  --ac-ink: #1a0710;
 
-  --ok: #37d39a;
-  --ok-bg: #14281f;
-  --warn: #ffc247;
-  --warn-bg: #1c1913;
-  --warn-line: #43391f;
-  --bad: #ff6a6a;
-  --bad-bg: #1d1414;
-  --bad-line: #4a2c2c;
-  --info: #7fb0ff;
-  --info-bg: #101823;
-  --info-line: #1f3350;
+  /* 彈幕色板 */
+  --ok: #a0ee00;
+  --ok-bg: #18220d;
+  --ok-line: #34481a;
+  --warn: #ffd302;
+  --warn-bg: #24200a;
+  --warn-line: #4d4312;
+  --bad: #ff4a3d;
+  --bad-bg: #24120f;
+  --bad-line: #5a2a24;
+  --info: #89d5ff;
+  --info-bg: #0f1a22;
+  --info-line: #1f3a4a;
+
+  /* 進度軌：未播、已緩衝（快取命中）、已播（真的打了請求）＝粉 */
+  --track: #24262c;
+  --buffered: #4b4e57;
 
   --r: 4px;
   --top-h: 48px;
-  --bar-h: 60px;
-  --rail-w: 288px;
+  --bar-h: 64px;
+  --rail-w: 320px;
 
-  --mono: ui-monospace, 'Cascadia Mono', Consolas, 'SF Mono', monospace;
+  --mono: 'Spline Sans Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
   color-scheme: dark;
   font-family:
@@ -104,7 +120,7 @@ button.link:disabled {
 }
 
 ::selection {
-  background: rgba(255, 92, 141, 0.28);
+  background: rgba(255, 92, 141, 0.32);
 }
 
 ::-webkit-scrollbar {
@@ -113,13 +129,13 @@ button.link:disabled {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2b323b;
+  background: #2a2c33;
   border: 3px solid var(--panel);
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b444f;
+  background: #3a3d46;
 }
 
 ::-webkit-scrollbar-track {
@@ -162,9 +178,10 @@ button.link:disabled {
   font-variant-numeric: tabular-nums;
 }
 
+/* 區段標題：12px、字距拉開，只用來標一個區段 */
 .lbl {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--tx3);
 }
@@ -235,13 +252,15 @@ button.link:disabled {
   /* minmax(0, 1fr)：頂列的 min-content（品牌＋四個分頁＋帳號）在窄視窗會比視窗寬，不能讓它把整個 .app 撐寬 */
   grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
+  background: var(--ground);
 }
 
 .topbar {
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 0 16px;
-  background: var(--rail);
+  background: var(--ground);
   border-bottom: 1px solid var(--line);
 }
 
@@ -265,14 +284,11 @@ button.link:disabled {
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  padding-right: 18px;
-}
-
-.brand svg {
-  color: var(--ac);
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding-right: 16px;
 }
 
 .tabs {
@@ -281,19 +297,20 @@ button.link:disabled {
   min-width: 0;
 }
 
+/* 分頁的 active 標記是一段 3px 圓端的粉色「已播」段，壓在頂列的分隔線上 */
 .tab {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 14px;
   border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
   background: transparent;
   color: var(--tx3);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
+  transition: color 0.15s ease-out;
 }
 
 .tab:hover {
@@ -303,7 +320,17 @@ button.link:disabled {
 .tab.active {
   color: var(--tx);
   font-weight: 600;
-  border-bottom-color: var(--ac);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: var(--ac);
 }
 
 .session {
@@ -320,10 +347,10 @@ button.link:disabled {
 }
 
 .avatar {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #1c2129;
+  background: #2a2c33;
   flex: none;
   object-fit: cover;
 }
@@ -338,7 +365,7 @@ button.link:disabled {
   height: 40px;
 }
 
-/* 每個分頁自己是「內容 + 底部作業列」；作業列在每一頁都是同一件事：你正要執行的批次 */
+/* 每個分頁自己是「內容 + 底部控制列」；控制列在每一頁都是同一件事：你正要執行的批次 */
 .page {
   display: grid;
   grid-template-rows: 1fr var(--bar-h);
@@ -395,7 +422,7 @@ button.link:disabled {
   display: block;
   height: 28px;
   margin-top: -28px;
-  background: linear-gradient(to bottom, rgba(17, 20, 25, 0), var(--rail));
+  background: linear-gradient(to bottom, rgba(18, 19, 22, 0), var(--rail));
   pointer-events: none;
 }
 
@@ -404,7 +431,7 @@ button.link:disabled {
 }
 
 .rail-sec {
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -423,7 +450,7 @@ button.link:disabled {
 .rail-foot {
   margin-top: auto;
   border-top: 1px solid var(--line);
-  padding: 10px 14px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -442,20 +469,32 @@ button.link:disabled {
 }
 
 .c-head {
-  padding: 14px 18px 12px;
+  padding: 16px 24px 14px;
   border-bottom: 1px solid var(--line);
 }
 
 .c-title {
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/* 標題前面的章節號：等寬、退一階 */
+.c-title .no {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--tx3);
 }
 
 .c-tools {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 18px;
+  padding: 10px 24px;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
@@ -467,12 +506,12 @@ button.link:disabled {
 }
 
 .c-pad {
-  padding: 16px 18px;
+  padding: 16px 24px;
 }
 
 /* 設定的表單段落：欄位再寬也不好讀，收在一欄裡 */
 .settings-form > * {
-  max-width: 860px;
+  max-width: 920px;
 }
 
 /* ---- 右側「這一批」 ---- */
@@ -500,22 +539,22 @@ button.link:disabled {
   margin-bottom: 10px;
 }
 
-/* ---- 底部作業列 ---- */
+/* ---- 底部控制列 ---- */
 
 .runbar {
   background: var(--rail);
   border-top: 1px solid var(--line);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 18px;
+  gap: 10px;
+  padding: 0 20px;
   overflow-x: auto;
 }
 
 .runbar .why {
   font-size: 12px;
   color: var(--tx3);
-  /* 允許換行：作業列 60px 放得下兩行 12px 的說明；不換行的話「另一種任務在跑」這種長句會把右邊的按鈕推出畫面 */
+  /* 允許換行：控制列 64px 放得下兩行 12px 的說明；不換行的話「另一種任務在跑」這種長句會把右邊的按鈕推出畫面 */
   min-width: 0;
 }
 
@@ -530,8 +569,83 @@ button.link:disabled {
 }
 
 .runbar .read-inline i {
-  color: #4d5560;
+  color: var(--tx3);
   font-style: normal;
+}
+
+/* 設定頁控制列中段的章節軌：六段＝六個章節、缺口＝「AI 專用／共用」的分界；改過沒存的段亮粉、目前所在的段有播放頭 */
+.chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 360px;
+  max-width: 560px;
+  flex: 1;
+  margin: 0 12px;
+}
+
+.segs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+}
+
+.seg {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+  padding: 0;
+  background: var(--track);
+  cursor: pointer;
+  transition: background-color 0.15s ease-out;
+}
+
+.seg:hover {
+  background: var(--line-2);
+}
+
+.seg.dirty {
+  background: var(--ac);
+}
+
+.seg.now::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ac);
+  border: 2px solid var(--rail);
+  transform: translateX(-50%);
+  box-sizing: border-box;
+}
+
+.segs .gap,
+.seg-labels .gap {
+  width: 14px;
+  flex: none;
+}
+
+.seg-labels {
+  display: flex;
+  gap: 3px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--tx3);
+}
+
+.seg-labels span {
+  flex: 1;
+  text-align: center;
+}
+
+.seg-labels .now {
+  color: var(--ac-2);
 }
 
 /* ---- 按鈕 ---- */
@@ -545,6 +659,7 @@ button.link:disabled {
   border-radius: var(--r);
   font: inherit;
   font-size: 12px;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -557,8 +672,8 @@ button.link:disabled {
 }
 
 .btn:hover:not(:disabled) {
-  background: #232935;
-  border-color: #3f4854;
+  background: #23252c;
+  border-color: #40444e;
 }
 
 .btn:disabled {
@@ -571,7 +686,7 @@ button.link:disabled {
   padding: 0 16px;
   background: var(--ac);
   border-color: var(--ac);
-  color: #16070d;
+  color: var(--ac-ink);
   font-weight: 600;
   font-size: 13px;
 }
@@ -581,13 +696,6 @@ button.link:disabled {
   border-color: #ff789f;
 }
 
-.btn.warn {
-  background: var(--warn);
-  border-color: var(--warn);
-  color: #221a06;
-  font-weight: 600;
-}
-
 .btn.danger {
   color: var(--bad);
   border-color: var(--bad-line);
@@ -595,7 +703,7 @@ button.link:disabled {
 
 .btn.danger:hover:not(:disabled) {
   background: var(--bad-bg);
-  border-color: #5e3737;
+  border-color: #7a3a32;
 }
 
 .btn.danger.solid {
@@ -606,8 +714,8 @@ button.link:disabled {
 }
 
 .btn.danger.solid:hover:not(:disabled) {
-  background: #ff8585;
-  border-color: #ff8585;
+  background: #ff6e63;
+  border-color: #ff6e63;
 }
 
 .btn.quiet {
@@ -625,7 +733,7 @@ button.link:disabled {
 .btn.small {
   height: 24px;
   padding: 0 9px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* ---- 表單控制項 ---- */
@@ -639,12 +747,19 @@ textarea,
 select {
   font: inherit;
   font-size: 12px;
-  height: 30px;
+  height: 32px;
   padding: 0 10px;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
   background: var(--input-bg);
   color: var(--tx);
+}
+
+input[type='url'],
+input[type='password'],
+input[type='number'] {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
 
 textarea {
@@ -660,12 +775,12 @@ textarea::placeholder {
   color: var(--tx3);
 }
 
+/* 焦點＝邊框轉粉，不加光暈：這個世界不發光 */
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--ac);
-  box-shadow: 0 0 0 3px rgba(255, 92, 141, 0.18);
 }
 
 input:disabled,
@@ -693,8 +808,8 @@ input[type='checkbox']:disabled {
 .check {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   color: var(--tx2);
   cursor: pointer;
 }
@@ -706,7 +821,7 @@ input[type='checkbox']:disabled {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   margin-bottom: 14px;
 }
 
@@ -737,6 +852,154 @@ input[type='checkbox']:disabled {
 }
 
 /*
+ * 設定列：左邊是「這是什麼、做什麼、預設是什麼」，右邊是控制項。
+ * 勾選＝挑東西、開關＝改設定；說明永遠在畫面上，不藏進 tooltip。
+ */
+.frow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 8px 28px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+
+.frow:last-child {
+  border-bottom: 0;
+}
+
+.frow .fk {
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.frow .fk .req {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--tx3);
+}
+
+.frow .fd {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--tx2);
+  max-width: 60ch;
+  text-wrap: pretty;
+  line-height: 1.55;
+}
+
+.frow .fd code,
+.frow .fdef b {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--tx);
+}
+
+.frow .fdef {
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--tx3);
+}
+
+.frow .fdef b {
+  color: var(--tx2);
+}
+
+.frow .fc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.frow .fc input[type='text'],
+.frow .fc input[type='password'],
+.frow .fc input[type='url'],
+.frow .fc textarea {
+  width: 100%;
+  max-width: none;
+}
+
+.frow .fc .field {
+  margin-bottom: 0;
+}
+
+.frow .fc .row {
+  font-size: 13px;
+}
+
+/* 控制項欄裡的單選列：標題不折行，說明接在後面自己換行 */
+.frow .fc .check {
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.frow .fc .check > span:not(.hint) {
+  flex: none;
+  white-space: nowrap;
+  color: var(--tx);
+}
+
+.frow .fc .check > .hint.inline {
+  flex: 1 1 200px;
+}
+
+/* 改過還沒存的欄位：邊框轉粉，與控制列上亮起的章節段是同一個訊號 */
+.frow.dirty .fc input,
+.frow.dirty .fc textarea {
+  border-color: var(--ac-line);
+}
+
+/* 章節開頭的適用範圍：用在哪幾個功能、不用在哪個 */
+.scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--tx2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--tx2);
+  white-space: nowrap;
+}
+
+.badge.on {
+  border-color: var(--ac-line);
+  background: var(--ac-tint);
+  color: var(--ac-2);
+}
+
+.badge.off {
+  color: var(--tx3);
+  text-decoration: line-through;
+}
+
+.c-head .intro {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--tx2);
+  max-width: 72ch;
+  text-wrap: pretty;
+}
+
+/*
  * 勾選＝挑東西、開關＝改設定。開關仍然是原生 checkbox（鍵盤與 a11y 不變），
  * 只是換一張臉，免得「這是選取還是設定」在同一頁上分不出來。
  */
@@ -746,7 +1009,7 @@ input.switch {
   width: 34px;
   height: 20px;
   border-radius: 10px;
-  background: #262d37;
+  background: #2b2d35;
   border: 1px solid var(--line-2);
   position: relative;
   cursor: pointer;
@@ -761,7 +1024,7 @@ input.switch::after {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #6b7684;
+  background: #9a9ea8;
   transition: transform 0.15s ease-out;
 }
 
@@ -772,7 +1035,7 @@ input.switch:checked {
 
 input.switch:checked::after {
   transform: translateX(14px);
-  background: #1b0a11;
+  background: #fff;
 }
 
 input.switch:disabled {
@@ -804,45 +1067,46 @@ input.switch:disabled {
   flex: none;
 }
 
-/* ---- 不活躍門檻：一個數字欄位＋三個常用值 ---- */
+/* ---- 安靜門檻：一個數字欄位＋三個常用值；它同時是審核表裡那條播放頭 ---- */
 
 .threshold {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .threshold input[type='number'] {
   width: 84px;
-  height: 32px;
+  height: 36px;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  padding: 0 8px;
+  padding: 0 10px;
+  border-color: var(--ac);
 }
 
 .threshold .unit {
-  font-size: 12px;
-  color: var(--tx3);
+  font-size: 13px;
+  color: var(--tx2);
   margin-right: 4px;
 }
 
 .presets {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   margin-top: 8px;
 }
 
 /* ---- 標籤 / 膠囊 / 橫幅 ---- */
 
 .tag {
-  height: 18px;
+  height: 20px;
   padding: 0 6px;
   border-radius: 3px;
-  background: #212832;
-  color: var(--tx3);
-  font-size: 11px;
+  background: #212329;
+  color: var(--tx2);
+  font-size: 12px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -862,8 +1126,15 @@ input.switch:disabled {
   font-weight: 600;
 }
 
+/* 使用者特意歸檔的訊號（特別關注）：加重但不上色，粉色留給選取與主要動作 */
+.tag.strong {
+  color: var(--tx);
+  font-weight: 600;
+  background: #2a2c33;
+}
+
 .tag.warn {
-  background: #2a2415;
+  background: var(--warn-bg);
   color: var(--warn);
 }
 
@@ -880,12 +1151,12 @@ input.switch:disabled {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 
 .chip {
   height: 26px;
-  padding: 0 9px;
+  padding: 0 10px;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
   background: transparent;
@@ -899,8 +1170,13 @@ input.switch:disabled {
   font-variant-numeric: tabular-nums;
 }
 
+/* 門檻的三個常用值是數字，走等寬；其他 chip（目標收藏夾）維持介面字 */
+.presets .chip {
+  font-family: var(--mono);
+}
+
 .chip:hover:not(:disabled) {
-  border-color: #4a5361;
+  border-color: #4a4e58;
   color: var(--tx);
 }
 
@@ -938,25 +1214,25 @@ input.switch:disabled {
 .banner.warn {
   border-color: var(--warn-line);
   background: var(--warn-bg);
-  color: #e4d3a6;
+  color: #eadfa4;
 }
 
 .banner.error {
   border-color: var(--bad-line);
   background: var(--bad-bg);
-  color: #f0b6b6;
+  color: #f3b8b2;
 }
 
 .banner.info {
   border-color: var(--info-line);
   background: var(--info-bg);
-  color: #a9c4e4;
+  color: #b4dcf3;
 }
 
 .banner.ok {
-  border-color: #23402f;
+  border-color: var(--ok-line);
   background: var(--ok-bg);
-  color: #9fdcbf;
+  color: #cfeaa0;
 }
 
 .banner .spacer {
@@ -968,6 +1244,7 @@ input.switch:disabled {
 .facets {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .facet {
@@ -989,7 +1266,7 @@ input.switch:disabled {
 }
 
 .facet:hover {
-  background: #171c23;
+  background: #1a1b20;
 }
 
 .facet.on {
@@ -1000,14 +1277,14 @@ input.switch:disabled {
 
 .facet .n {
   margin-left: auto;
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
-  font-variant-numeric: tabular-nums;
   transition: color 0.2s ease-out;
 }
 
 .facet.on .n {
-  color: rgba(255, 163, 191, 0.8);
+  color: rgba(255, 176, 200, 0.8);
 }
 
 .facet .name {
@@ -1031,7 +1308,7 @@ input.switch:disabled {
   height: 26px;
   font-size: 12px;
   color: var(--tx2);
-  border-bottom: 1px dashed rgba(36, 42, 51, 0.9);
+  border-bottom: 1px dashed rgba(36, 38, 44, 0.9);
 }
 
 .read-row:last-child {
@@ -1039,6 +1316,7 @@ input.switch:disabled {
 }
 
 .read-row b {
+  font-family: var(--mono);
   font-weight: 600;
   font-size: 13px;
   color: var(--tx);
@@ -1059,7 +1337,7 @@ input.switch:disabled {
 .read-strip-head {
   display: flex;
   align-items: center;
-  height: 30px;
+  height: 32px;
   padding: 0 12px;
   border-bottom: 1px solid var(--line);
   background: var(--rail);
@@ -1081,14 +1359,15 @@ input.switch:disabled {
 
 .read-item b {
   display: block;
-  font-size: 19px;
+  font-family: var(--mono);
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
 
 .read-item span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
 }
 
@@ -1108,14 +1387,14 @@ table.grid th {
   top: 0;
   z-index: 2;
   text-align: left;
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   color: var(--tx3);
-  height: 30px;
+  height: 40px;
   padding: 0 12px;
   border-bottom: 1px solid var(--line);
-  background: var(--rail);
+  background: var(--panel);
 }
 
 table.grid td {
@@ -1126,30 +1405,32 @@ table.grid td {
 }
 
 table.grid tbody tr:hover td {
-  background: #171c23;
+  background: #14151a;
 }
 
 table.grid tr.picked td {
-  background: #14181f;
+  background: #121317;
 }
 
 table.grid tr.draft td {
-  background: #16150f;
+  background: #17150c;
 }
 
 table.grid tr.done-row td {
-  background: #101a16;
+  background: #121a0c;
 }
 
 table.grid td.vtop {
   vertical-align: top;
 }
 
+/* 端點名只在斜線後面斷行（RequestTable 補了 <wbr>），不把識別符從字中間切開 */
 table.grid .endpoint {
   font-family: var(--mono);
-  font-size: 11px;
-  color: #8fb0d8;
-  overflow-wrap: anywhere;
+  font-size: 12px;
+  color: var(--info);
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 table.grid tr.off td {
@@ -1157,7 +1438,7 @@ table.grid tr.off td {
 }
 
 table.grid tr.off td .endpoint {
-  color: #5c6b80;
+  color: #5d7a8a;
 }
 
 table.grid td.n {
@@ -1208,11 +1489,11 @@ table.grid tbody tr.pick {
 }
 
 table.grid tr.sel td {
-  background: #1f1519;
+  background: #221217;
 }
 
 table.grid tr.sel:hover td {
-  background: #24181d;
+  background: #28151b;
 }
 
 /* 查不到狀態或還沒查的列：看得見，但整列退到後面，勾選框也鎖著 */
@@ -1221,7 +1502,232 @@ table.grid tr.locked td {
 }
 
 table.grid tr.failed-row td {
-  background: #1a1414;
+  background: #1e1210;
+}
+
+/* ---- 關注審核表的時間軸欄：每個帳號的安靜期是一條軌，門檻是一條貫穿所有列的播放頭 ---- */
+
+/*
+ * 固定欄寬：時間軸是這張表的主角（最寬的一欄），證據欄用省略號收邊，表格永遠不比視窗寬。
+ * px 欄合計約 410，其餘按百分比分；欄位藏起來（≤1200 的時間軸、≤900 的天數與關注於）時，
+ * 那一欄的 th 與 td 一起 display:none，fixed layout 會重新分配寬度。
+ */
+table.grid.dense {
+  table-layout: fixed;
+}
+
+table.grid.dense th.col-tick {
+  width: 36px;
+}
+
+/* 證據欄（帳號、最新投稿）合佔 39%、時間軸 24%：時間軸仍是最寬的一欄，但標題要留得住十幾個字 */
+table.grid.dense th.col-account {
+  width: 19%;
+}
+
+table.grid.dense th.col-latest {
+  width: 20%;
+}
+
+table.grid.dense th.col-group {
+  width: 80px;
+}
+
+table.grid.dense th.col-lane {
+  width: 24%;
+  padding: 0 !important;
+  overflow: visible;
+}
+
+/* 「安靜天數」加上排序箭頭要 100px 出頭；再窄箭頭就被下一格 sticky 表頭的底色蓋掉 */
+table.grid.dense th.col-days {
+  width: 104px;
+}
+
+table.grid.dense th.col-followed {
+  width: 92px;
+}
+
+table.grid.dense th.col-status {
+  width: 100px;
+}
+
+/* 密表的欄名不換行：欄名一折成兩行，46px 的列高就對不上表頭 */
+table.grid.dense th {
+  white-space: nowrap;
+}
+
+td.col-lane {
+  padding: 0 !important;
+  position: relative;
+}
+
+/* 表頭的刻度尺：年份刻度＋可拖的播放頭 */
+.ruler {
+  position: relative;
+  height: 40px;
+  overflow: visible;
+}
+
+.ruler .yr {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--tx3);
+}
+
+.ruler .yr.first {
+  transform: none;
+}
+
+/* 軸的右端就是今天 */
+.ruler .yr.last {
+  right: 0;
+  transform: none;
+  color: var(--tx2);
+}
+
+/* 年份刻度掛在年份那一行的正下方，不跟播放頭的天數搶同一行 */
+.ruler .tick {
+  position: absolute;
+  top: 19px;
+  width: 1px;
+  height: 6px;
+  background: var(--line-2);
+}
+
+/* 播放頭：原生 range 換臉——軌透明、拇指是圓形播放頭，鍵盤左右鍵也能拖 */
+.ruler input.playhead {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: -9px;
+  width: calc(100% + 16px);
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: ew-resize;
+  z-index: 3;
+}
+
+.ruler input.playhead::-webkit-slider-runnable-track {
+  height: 18px;
+  background: transparent;
+}
+
+.ruler input.playhead::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 2px solid var(--panel);
+  background: var(--ac);
+  box-sizing: border-box;
+  transition: transform 0.15s ease-out;
+}
+
+.ruler input.playhead:hover::-webkit-slider-thumb,
+.ruler input.playhead:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+.ruler input.playhead:focus-visible {
+  outline: none;
+}
+
+/* 播放頭旁的天數：貼著圓鈕、在年份那一行的下面，跟著位置走；靠右時翻到左邊 */
+.ruler .ph-cap {
+  position: absolute;
+  bottom: 3px;
+  line-height: 1;
+  transform: translateX(11px);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ac-2);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ruler .ph-cap.flip {
+  transform: translateX(calc(-100% - 11px));
+}
+
+.lane {
+  position: relative;
+  height: 46px;
+  overflow: visible;
+}
+
+.lane .trk {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22px;
+  height: 2px;
+  background: var(--track);
+}
+
+.lane.none .trk,
+.lane.na .trk {
+  background: repeating-linear-gradient(90deg, var(--line-2) 0 4px, transparent 4px 8px);
+}
+
+/* 安靜期：從最新一支投稿到今天 */
+.lane .bar {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  height: 6px;
+  border-radius: 3px;
+  opacity: 0.35;
+}
+
+.lane .mk {
+  position: absolute;
+  top: 17px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  border: 2px solid var(--panel);
+  box-sizing: border-box;
+}
+
+.lane .note {
+  position: absolute;
+  top: 13px;
+  left: 8px;
+  padding: 0 6px;
+  background: var(--panel);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--tx3);
+}
+
+/* 每一列自己畫一段播放頭，上下各多 1px 蓋過列的分隔線，看起來就是一條連續的線 */
+.lane .ph {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--ac);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+tr.sel .lane .note {
+  background: #221217;
 }
 
 /* ---- 收藏夾縮圖 ---- */
@@ -1232,7 +1738,7 @@ table.grid tr.failed-row td {
   flex: none;
   object-fit: cover;
   border-radius: 3px;
-  background: #1c2129;
+  background: #1e1f25;
   display: block;
 }
 
@@ -1277,7 +1783,7 @@ table.grid tr.failed-row td {
 }
 
 .folder-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   display: flex;
   align-items: center;
@@ -1290,7 +1796,7 @@ table.grid tr.failed-row td {
   height: 60px;
   object-fit: cover;
   border-radius: 3px;
-  background: #1c2129;
+  background: #1e1f25;
   display: block;
 }
 
@@ -1311,7 +1817,7 @@ table.grid tr.failed-row td {
   height: 42px;
   padding: 0 14px;
   border: none;
-  border-bottom: 1px solid rgba(36, 42, 51, 0.6);
+  border-bottom: 1px solid rgba(36, 38, 44, 0.6);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -1321,7 +1827,7 @@ table.grid tr.failed-row td {
 }
 
 .src-row:hover:not(:disabled) {
-  background: #171c23;
+  background: #1a1b20;
 }
 
 .src-row.on {
@@ -1346,18 +1852,19 @@ table.grid tr.failed-row td {
 }
 
 .src-n {
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
   font-variant-numeric: tabular-nums;
 }
 
 .pin {
-  height: 17px;
+  height: 18px;
   padding: 0 5px;
   border-radius: 3px;
   background: var(--ac);
-  color: #16070d;
-  font-size: 11px;
+  color: var(--ac-ink);
+  font-size: 12px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -1374,7 +1881,7 @@ table.grid tr.failed-row td {
 
 .stat-grid .read-row {
   height: 24px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
 }
 
@@ -1400,7 +1907,7 @@ table.grid tr.failed-row td {
 }
 
 .who .sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   font-variant-numeric: tabular-nums;
 }
@@ -1434,7 +1941,8 @@ table.grid tr.failed-row td {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
   font-variant-numeric: tabular-nums;
 }
@@ -1449,6 +1957,7 @@ table.grid tr.failed-row td {
 }
 
 .step .m {
+  font-family: var(--mono);
   font-size: 12px;
   color: var(--tx2);
   font-variant-numeric: tabular-nums;
@@ -1478,7 +1987,8 @@ table.grid tr.failed-row td {
 .fstep .fnum {
   width: 15px;
   flex: none;
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -1535,7 +2045,8 @@ table.grid tr.failed-row td {
 .fstep-lg .fnum {
   width: 18px;
   flex: none;
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
   font-variant-numeric: tabular-nums;
   padding-top: 2px;
@@ -1566,7 +2077,7 @@ table.grid tr.failed-row td {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #39414c;
+  background: #3a3d46;
 }
 
 .spin {
@@ -1585,27 +2096,32 @@ table.grid tr.failed-row td {
   }
 }
 
-/* ---- 進度儀表 ---- */
+/* ---- 進度軌（播放器的進度條：未播、已緩衝＝快取命中、已播＝真的打了請求）---- */
 
 .progress {
+  position: relative;
   height: 4px;
-  background: #1e242c;
+  background: var(--track);
   border-radius: 2px;
   overflow: hidden;
 }
 
 /* 填色用 scaleX（呼叫端傳 transform），同樣是為了不動版面 */
 .progress > div {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background: var(--ac);
   border-radius: 2px;
   transform-origin: left center;
   transition: transform 0.2s ease-out;
 }
 
+.progress > div.buf {
+  background: var(--buffered);
+}
+
 .gauge {
-  padding: 18px 20px 16px;
+  padding: 18px 24px 16px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1619,10 +2135,12 @@ table.grid tr.failed-row td {
 .gauge-phase {
   font-size: 19px;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .gauge-count {
   margin-left: auto;
+  font-family: var(--mono);
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -1638,6 +2156,27 @@ table.grid tr.failed-row td {
 
 .gauge .progress {
   margin-top: 14px;
+}
+
+.gauge-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--tx3);
+}
+
+.gauge-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gauge-legend i {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  display: inline-block;
 }
 
 .gauge-read {
@@ -1662,12 +2201,13 @@ table.grid tr.failed-row td {
 }
 
 .gauge-item span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .gauge-item b {
+  font-family: var(--mono);
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1686,7 +2226,7 @@ table.grid tr.failed-row td {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 30px;
+  height: 32px;
   padding: 0 12px;
   border-bottom: 1px solid var(--line);
   background: var(--rail);
@@ -1696,13 +2236,13 @@ table.grid tr.failed-row td {
   display: flex;
   align-items: center;
   gap: 14px;
-  height: 26px;
+  height: 28px;
   padding: 0 12px;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx2);
-  border-bottom: 1px solid rgba(36, 42, 51, 0.5);
+  border-bottom: 1px solid rgba(36, 38, 44, 0.5);
   white-space: nowrap;
 }
 
@@ -1716,8 +2256,8 @@ table.grid tr.failed-row td {
 }
 
 .log-row .ep {
-  color: #8fb0d8;
-  width: 210px;
+  color: var(--info);
+  width: 220px;
   flex: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1747,7 +2287,7 @@ table.grid tr.failed-row td {
 
 .log-empty {
   padding: 10px 12px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
 }
 
@@ -1765,7 +2305,7 @@ table.grid tr.failed-row td {
   width: 96px;
   height: 60px;
   border-radius: 3px;
-  background: #1c2129;
+  background: #1a1b20;
   flex: none;
 }
 
@@ -1779,11 +2319,11 @@ table.grid tr.failed-row td {
 .skel {
   height: 9px;
   border-radius: 2px;
-  background: #1c2129;
+  background: #1a1b20;
 }
 
 .skel.faint {
-  background: #191e25;
+  background: #16171b;
 }
 
 /* 關注的骨架列比影片列矮（頭像 28px、列高 46px） */
@@ -1795,7 +2335,7 @@ table.grid tr.failed-row td {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #1c2129;
+  background: #1a1b20;
   flex: none;
 }
 
@@ -1828,7 +2368,7 @@ a.vtitle:hover {
 }
 
 .basis {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   margin-top: 3px;
 }
@@ -1846,7 +2386,7 @@ a.vtitle:hover {
   align-items: center;
   flex-wrap: wrap;
   gap: 7px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   margin-top: 7px;
 }
@@ -1855,7 +2395,7 @@ a.vtitle:hover {
 .multi .chip {
   height: 22px;
   padding: 0 7px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .status {
@@ -1876,7 +2416,7 @@ a.vtitle:hover {
 .sublink {
   display: inline-block;
   margin-top: 5px;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -1903,7 +2443,7 @@ a.vtitle:hover {
 .acct {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -1914,8 +2454,8 @@ a.vtitle:hover {
 }
 
 .acct-name {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--tx);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1934,7 +2474,8 @@ a.vtitle:hover {
 }
 
 .acct-sub {
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
   display: flex;
   align-items: center;
@@ -1969,7 +2510,7 @@ tr.locked .acct-name {
   gap: 4px;
 }
 
-/* 最後影片欄：標題一行、多久前用天數 */
+/* 最新投稿欄：標題一行、日期用等寬 */
 .vid {
   display: flex;
   flex-direction: column;
@@ -1990,7 +2531,7 @@ a.vid-title:hover {
 }
 
 .vid-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   margin-top: 1px;
 }
@@ -2006,6 +2547,7 @@ tr.locked .vid-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--tx);
+  white-space: nowrap;
 }
 
 .days.over {
@@ -2026,7 +2568,7 @@ tr.locked .vid-title {
 
 .status .note {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   white-space: normal;
 }
@@ -2042,7 +2584,7 @@ tr.locked .vid-title {
 .bar-meter {
   height: 4px;
   border-radius: 2px;
-  background: #1e242c;
+  background: var(--track);
   margin-top: 10px;
   overflow: hidden;
 }
@@ -2059,10 +2601,11 @@ tr.locked .vid-title {
   height: 34px;
 }
 
+/* 草稿是機器寫的、還沒被你認可的東西：黃 */
 .desc-field.draft {
-  background: #221d10;
-  border-color: #4a3f22;
-  color: #f0dfae;
+  background: #1f1b08;
+  border-color: var(--warn-line);
+  color: #f1e3a0;
 }
 
 /* 草稿是「現在 → 建議」的對照，不是把輸入框染黃 */
@@ -2072,7 +2615,7 @@ tr.locked .vid-title {
   height: 26px;
   padding: 0 10px;
   border-radius: var(--r);
-  background: #14181f;
+  background: #121317;
   font-size: 12px;
   color: var(--tx3);
 }
@@ -2088,94 +2631,124 @@ tr.locked .vid-title {
   align-items: center;
   gap: 8px;
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
   flex-wrap: wrap;
 }
 
-/* ---- 設定分頁 ---- */
+/* ---- 設定分頁：左軌是章節清單，分三組 ---- */
 
-.snav {
+.chap-grp {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px 16px 6px;
 }
 
-.snav-item {
-  display: flex;
-  gap: 11px;
-  padding: 11px 16px;
+.chap-grp + .chap-grp,
+.chap + .chap-grp {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+}
+
+.chap-grp .no {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--tx3);
+}
+
+.chap-grp .g {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--tx2);
+}
+
+.chap {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 0 8px;
+  align-items: center;
+  width: 100%;
+  padding: 9px 16px 9px 12px;
   border: none;
-  border-bottom: 1px solid rgba(36, 42, 51, 0.55);
   background: transparent;
-  color: inherit;
+  color: var(--tx);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background-color 0.15s ease-out;
 }
 
-.snav-item:hover {
-  background: #171c23;
+.chap:hover {
+  background: #17181d;
 }
 
-.snav-item.on {
+.chap.on {
   background: var(--ac-tint);
 }
 
-.snav-item .ic {
-  width: 18px;
-  height: 18px;
-  flex: none;
+.chap .no {
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--tx3);
-  margin-top: 1px;
+  align-self: start;
+  padding-top: 1px;
 }
 
-.snav-item.on .ic {
+.chap.on .no {
   color: var(--ac);
-}
-
-.snav-item .nm {
-  font-size: 13px;
-  font-weight: 500;
-  display: block;
-}
-
-.snav-item.on .nm {
-  color: var(--ac-2);
   font-weight: 600;
 }
 
-/* 段落摘要只有一行：讀數再多也是省略號，不換行（換了行左軌的節奏就斷） */
-.snav-item > span:last-child {
-  min-width: 0;
-  flex: 1;
+.chap .nm {
+  font-weight: 600;
+  font-size: 13px;
+  display: block;
 }
 
-.snav-item .st {
-  font-size: 11px;
+/* 章節摘要只有一行：讀數再多也是省略號，不換行（換了行左軌的節奏就斷）。等寬只給數字與識別符，散文用介面字 */
+.chap .st {
+  grid-column: 2;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
   color: var(--tx3);
-  margin-top: 2px;
-  display: block;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
 }
 
-.snav-item .st > * + * {
-  margin-left: 6px;
+.chap .st > * {
+  flex: none;
 }
 
-.snav-item .st .dot,
-.snav-item .st .tag {
-  vertical-align: middle;
+.chap .st .ellipsis {
+  flex: 0 1 auto;
 }
 
-/* 色點後面接的是文字節點，拿不到上面的兄弟間距，補一個 */
-.snav-item .st .dot {
-  margin-right: 6px;
+.chap.on .st {
+  color: var(--ac-2);
 }
 
-.snav-item.on .st {
-  color: rgba(255, 163, 191, 0.72);
+.chap.on .st .dot {
+  opacity: 0.9;
+}
+
+/* 指回關注頁的那一列：不是章節，是一扇門 */
+.chap.link {
+  color: var(--tx2);
+}
+
+.chap.link .nm {
+  font-weight: 500;
+}
+
+.chap.link .st {
+  font-family: inherit;
+  white-space: normal;
+  color: var(--tx3);
 }
 
 .cols {
@@ -2186,7 +2759,7 @@ tr.locked .vid-title {
 }
 
 .col-l {
-  padding: 4px 20px 18px;
+  padding: 4px 24px 18px;
   border-right: 1px solid var(--line);
   min-height: 0;
   display: flex;
@@ -2195,7 +2768,7 @@ tr.locked .vid-title {
 }
 
 .col-r {
-  padding: 18px 20px;
+  padding: 18px 24px;
   overflow-y: auto;
 }
 
@@ -2226,12 +2799,26 @@ tr.locked .vid-title {
 }
 
 .srow-desc {
+  display: block;
   font-size: 12px;
   color: var(--tx2);
   margin-top: 4px;
   line-height: 1.55;
   max-width: 58ch;
   text-wrap: pretty;
+}
+
+.srow-def {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--tx3);
+}
+
+.srow-def b {
+  font-weight: 400;
+  color: var(--tx2);
 }
 
 .srow-cost {
@@ -2241,6 +2828,7 @@ tr.locked .vid-title {
 }
 
 .srow-cost b {
+  font-family: var(--mono);
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -2248,7 +2836,7 @@ tr.locked .vid-title {
 
 .srow-cost span {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--tx3);
 }
 
@@ -2266,8 +2854,8 @@ tr.locked .vid-title {
   background: var(--input-bg);
   padding: 12px 14px;
   font-family: var(--mono);
-  font-size: 11px;
-  line-height: 1.75;
+  font-size: 12px;
+  line-height: 1.7;
   color: var(--tx2);
   white-space: pre-wrap;
   word-break: break-word;
@@ -2317,11 +2905,11 @@ details.details[open] {
 
 /* 新增收藏夾那一列：表格的最後一列，底色沉一階以示它不是資料 */
 table.grid tr.add-row td {
-  background: #12161c;
+  background: #0c0d10;
 }
 
 table.grid tr.add-row:hover td {
-  background: #141920;
+  background: #101115;
 }
 
 /* ---- 對話框 ---- */
@@ -2329,7 +2917,7 @@ table.grid tr.add-row:hover td {
 .dlg-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 8, 0.66);
+  background: rgba(4, 4, 6, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2337,9 +2925,9 @@ table.grid tr.add-row:hover td {
   z-index: 50;
 }
 
-/* 唯一的覆蓋層（「送了什麼」與「這次會做什麼」的檢視視窗）：靠背幕與 1px 線分層，不投影、不加大圓角——這個世界只有焦點環一個 box-shadow */
+/* 唯一的覆蓋層（「送了什麼」與「這次會做什麼」的檢視視窗）：靠背幕與 1px 線分層，不投影、不加大圓角 */
 .dlg {
-  background: var(--panel);
+  background: var(--rail);
   border: 1px solid var(--line-2);
   border-radius: var(--r);
   width: min(1000px, 100%);
@@ -2373,14 +2961,14 @@ table.grid tr.add-row:hover td {
 
 /* ---- 窄視窗（≤ 900px）：一個斷點、一段規則 ----
  *
- * 這是桌機工具，窄視窗只求每一件事都看得到、按得到。四個決定：
+ * 這是桌機工具，窄視窗只求每一件事都看得到、按得到。五個決定：
  * 1. 左軌（與整理頁的右欄）以自然高度排在內容上下、整個 .work 順流捲動（block 而不是 grid：grid 的 auto 列
  *    會被容器高度壓扁，左軌內容就溢出到中央欄上——實測量過）。沒有捲動邊界，所以也不需要桌面版的漸層。
- * 2. 底部作業列換行而不是橫向捲：說明文字、匯出、撤銷都要留在畫面上。
+ * 2. 控制列換行而不是橫向捲：說明文字、匯出、撤銷都要留在畫面上；章節軌收起來。
  * 3. 關注審核表（table.grid.dense）改成堆疊列：勾選框在左，右側由上而下是名字＋標記、天數（帶單位）＋mid、
- *    分組、最新投稿＋日期、狀態。三欄並排在 390px 試過三輪都是帳號格與最新投稿欄互搶寬度，所以讓列往下長。
- *    天數欄、關注日期欄、表頭（含排序）省略。其他表格維持原樣、在 .c-body 裡橫向捲。
- * 4. 頂列只留頭像與「重新檢查」，橫幅裡的動作換到下一行。
+ *    分組、最新投稿＋日期、狀態。時間軸欄、天數欄、關注日期欄、表頭（含排序）省略。其他表格維持原樣、在 .c-body 裡橫向捲。
+ * 4. 設定列從兩欄變一欄：說明在上、控制項在下。
+ * 5. 頂列只留頭像與「重新檢查」，橫幅裡的動作換到下一行。
  */
 
 @media (max-width: 900px) {
@@ -2432,7 +3020,7 @@ table.grid tr.add-row:hover td {
     grid-template-rows: 1fr auto;
   }
 
-  /* 2. 作業列換行 */
+  /* 2. 控制列換行 */
   .runbar {
     flex-wrap: wrap;
     overflow: visible;
@@ -2452,7 +3040,8 @@ table.grid tr.add-row:hover td {
     white-space: normal;
   }
 
-  .runbar .sep {
+  .runbar .sep,
+  .runbar .chapters {
     display: none;
   }
 
@@ -2488,7 +3077,8 @@ table.grid tr.add-row:hover td {
     padding-top: 8px;
   }
 
-  /* 桌面版的天數欄與關注日期欄不畫；沒有分組的帳號連分組那一行都省 */
+  /* 桌面版的時間軸、天數欄與關注日期欄不畫；沒有分組的帳號連分組那一行都省 */
+  table.grid.dense tbody tr td.col-lane,
   table.grid.dense tbody tr td.col-days,
   table.grid.dense tbody tr td.col-followed,
   table.grid.dense tbody tr td.col-group.empty {
@@ -2498,22 +3088,22 @@ table.grid tr.add-row:hover td {
   /* 列的底色在堆疊時掛在 tr 上，td 透明 */
   table.grid.dense tbody tr:hover,
   table.grid.dense tbody tr:hover td {
-    background: #171c23;
+    background: #14151a;
   }
 
   table.grid.dense tbody tr.sel,
   table.grid.dense tbody tr.sel td {
-    background: #1f1519;
+    background: #221217;
   }
 
   table.grid.dense tbody tr.done-row,
   table.grid.dense tbody tr.done-row td {
-    background: #101a16;
+    background: #121a0c;
   }
 
   table.grid.dense tbody tr.failed-row,
   table.grid.dense tbody tr.failed-row td {
-    background: #1a1414;
+    background: #1e1210;
   }
 
   /* 名字獨占位置、標記可以換到下一行；天數折進帳號行（桌面藏著，由天數欄負責） */
@@ -2544,7 +3134,26 @@ table.grid tr.add-row:hover td {
     -webkit-box-orient: vertical;
   }
 
-  /* 4. 頂列與橫幅：品牌只留記號、「重新檢查」只留圖示、帳號只留頭像，四個分頁才放得下；
+  /* 4. 設定列一欄 */
+  .frow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .col-l {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    overflow: visible;
+  }
+
+  .col-r {
+    overflow: visible;
+  }
+
+  /* 5. 頂列與橫幅：品牌只留記號、「重新檢查」只留圖示、帳號只留頭像，四個分頁才放得下；
    *    真的還放不下時分頁列自己橫向捲，右緣淡出說明「後面還有」 */
   .topbar {
     padding: 0 10px;
@@ -2571,6 +3180,11 @@ table.grid tr.add-row:hover td {
   .tab {
     padding: 0 10px;
     flex: none;
+  }
+
+  .tab.active::after {
+    left: 10px;
+    right: 10px;
   }
 
   .session {
@@ -2604,5 +3218,13 @@ table.grid tr.add-row:hover td {
     margin-left: 0;
     flex: 1 1 100%;
     text-align: left;
+  }
+}
+
+/* 中等寬度（≤ 1200px）：時間軸欄先讓位給證據欄；門檻仍在左軌改 */
+@media (max-width: 1200px) {
+  th.col-lane,
+  td.col-lane {
+    display: none;
   }
 }

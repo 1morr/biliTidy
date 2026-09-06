@@ -1,159 +1,164 @@
 ---
 name: biliTidy
-description: 深色審核工作台——四個平行分頁、證據攤開的表格、底部永遠寫著數字的作業列。
+description: 彈幕播放器的時間軸——影片黑的平塗底、1px 分隔線、粉色只給「現在」，底部作業列就是控制列。
 colors:
-  ground: "#0c0e11"
-  rail: "#111419"
-  panel: "#151920"
-  raised: "#1b2028"
-  input-bg: "#0f1216"
-  line: "#242a33"
-  line-2: "#323a45"
-  row-hover: "#171c23"
-  row-selected: "#1f1519"
-  row-selected-hover: "#24181d"
-  row-done: "#101a16"
-  row-failed: "#1a1414"
-  row-quiet: "#14181f"
-  tx: "#e9edf2"
-  tx2: "#a3adba"
-  tx3: "#7d8896"
+  ground: "#0c0c0e"
+  rail: "#121316"
+  panel: "#0f1012"
+  raised: "#1a1b20"
+  input-bg: "#09090b"
+  line: "#24262c"
+  line-2: "#33363e"
+  tx: "#f2f3f5"
+  tx2: "#a9adb6"
+  tx3: "#8b9099"
   ac: "#ff5c8d"
-  ac-2: "#ffa3bf"
-  ac-tint: "#2a161f"
-  ac-line: "rgba(255, 92, 141, 0.45)"
-  ac-on: "#16070d"
-  ok: "#37d39a"
-  ok-bg: "#14281f"
-  warn: "#ffc247"
-  warn-bg: "#1c1913"
-  warn-line: "#43391f"
-  bad: "#ff6a6a"
-  bad-bg: "#1d1414"
-  bad-line: "#4a2c2c"
-  info: "#7fb0ff"
-  info-bg: "#101823"
-  info-line: "#1f3350"
+  ac-2: "#ffb0c8"
+  ac-tint: "rgba(255, 92, 141, 0.14)"
+  ac-line: "rgba(255, 92, 141, 0.5)"
+  ac-ink: "#1a0710"
+  ok: "#a0ee00"
+  ok-bg: "#18220d"
+  ok-line: "#34481a"
+  warn: "#ffd302"
+  warn-bg: "#24200a"
+  warn-line: "#4d4312"
+  bad: "#ff4a3d"
+  bad-bg: "#24120f"
+  bad-line: "#5a2a24"
+  info: "#89d5ff"
+  info-bg: "#0f1a22"
+  info-line: "#1f3a4a"
+  track: "#24262c"
+  buffered: "#4b4e57"
+  row-selected: "#221217"
+  row-selected-hover: "#28151b"
+  row-hover: "#14151a"
+  row-draft: "#17150c"
+  row-done: "#121a0c"
+  row-failed: "#1e1210"
 typography:
-  display:
-    fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
+  count:
+    fontFamily: "Spline Sans Mono, ui-monospace, Cascadia Mono, Consolas, monospace"
     fontSize: "22px"
     fontWeight: 600
-    lineHeight: 1.2
+    letterSpacing: "-0.01em"
+    fontFeature: "tabular-nums"
+  readout:
+    fontFamily: "Spline Sans Mono, ui-monospace, Cascadia Mono, Consolas, monospace"
+    fontSize: "20px"
+    fontWeight: 600
     letterSpacing: "-0.01em"
     fontFeature: "tabular-nums"
   headline:
     fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
     fontSize: "19px"
     fontWeight: 600
+    lineHeight: 1.3
     letterSpacing: "-0.01em"
-    fontFeature: "tabular-nums"
   title:
     fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
-    fontSize: "15px"
-    fontWeight: 600
-    lineHeight: 1.4
+    fontSize: "14px"
+    fontWeight: 700
+    letterSpacing: "-0.01em"
   body:
     fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.5
-  body-sm:
+  body-strong:
+    fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
+    fontSize: "13px"
+    fontWeight: 600
+    lineHeight: 1.5
+  secondary:
     fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
     fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.5
   label:
     fontFamily: "system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif"
-    fontSize: "11px"
-    fontWeight: 500
+    fontSize: "12px"
+    fontWeight: 600
     letterSpacing: "0.08em"
-  numeric:
-    fontFamily: "ui-monospace, Cascadia Mono, Consolas, SF Mono, monospace"
-    fontSize: "11px"
-    fontWeight: 400
-    fontFeature: "tabular-nums"
-  numeric-lead:
-    fontFamily: "ui-monospace, Cascadia Mono, Consolas, SF Mono, monospace"
+  lead-number:
+    fontFamily: "Spline Sans Mono, ui-monospace, Cascadia Mono, Consolas, monospace"
     fontSize: "14px"
     fontWeight: 600
     fontFeature: "tabular-nums"
+  mono:
+    fontFamily: "Spline Sans Mono, ui-monospace, Cascadia Mono, Consolas, monospace"
+    fontSize: "12px"
+    fontWeight: 400
+    fontFeature: "tabular-nums"
 rounded:
-  xs: "2px"
-  sm: "3px"
-  md: "4px"
-  switch: "10px"
-  full: "50%"
+  control: "4px"
+  chip: "3px"
+  track: "2px"
+  knob: "50%"
 spacing:
-  xs: "4px"
-  sm: "6px"
-  md: "8px"
-  lg: "10px"
-  xl: "12px"
-  xxl: "14px"
-  x3l: "16px"
-  x4l: "18px"
-  rail-w: "288px"
-  top-h: "48px"
-  bar-h: "60px"
-  row-h: "46px"
+  hair: "4px"
+  tight: "6px"
+  sm: "8px"
+  row: "10px"
+  md: "14px"
+  lg: "16px"
+  page: "24px"
 components:
   button:
     backgroundColor: "{colors.raised}"
     textColor: "{colors.tx}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.control}"
     padding: "0 12px"
     height: "30px"
   button-hover:
-    backgroundColor: "#232935"
+    backgroundColor: "#23252c"
   button-primary:
     backgroundColor: "{colors.ac}"
-    textColor: "{colors.ac-on}"
-    typography: "{typography.body}"
-    rounded: "{rounded.md}"
+    textColor: "{colors.ac-ink}"
+    typography: "{typography.body-strong}"
+    rounded: "{rounded.control}"
     padding: "0 16px"
     height: "34px"
   button-primary-hover:
     backgroundColor: "#ff789f"
-  button-warn:
-    backgroundColor: "{colors.warn}"
-    textColor: "#221a06"
-    typography: "{typography.label}"
-    rounded: "{rounded.md}"
-    padding: "0 9px"
-    height: "24px"
   button-danger:
     backgroundColor: "transparent"
     textColor: "{colors.bad}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.control}"
     padding: "0 12px"
     height: "30px"
   button-danger-solid:
     backgroundColor: "{colors.bad}"
     textColor: "#24090a"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
-    padding: "0 12px"
-    height: "30px"
   button-quiet:
     backgroundColor: "transparent"
     textColor: "{colors.tx3}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
+    rounded: "{rounded.control}"
     padding: "0 12px"
     height: "30px"
-  button-small:
-    typography: "{typography.label}"
-    padding: "0 9px"
-    height: "24px"
+  input:
+    backgroundColor: "{colors.input-bg}"
+    textColor: "{colors.tx}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.control}"
+    padding: "0 10px"
+    height: "32px"
+  switch:
+    backgroundColor: "#2b2d35"
+    rounded: "10px"
+    width: "34px"
+    height: "20px"
+  switch-checked:
+    backgroundColor: "{colors.ac}"
   chip:
     backgroundColor: "transparent"
     textColor: "{colors.tx2}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
-    padding: "0 9px"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.control}"
+    padding: "0 10px"
     height: "26px"
   chip-on:
     backgroundColor: "{colors.ac-tint}"
@@ -161,117 +166,59 @@ components:
   facet:
     backgroundColor: "transparent"
     textColor: "{colors.tx2}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.control}"
     padding: "0 8px"
     height: "28px"
-    width: "100%"
   facet-on:
     backgroundColor: "{colors.ac-tint}"
     textColor: "{colors.ac-2}"
   tag:
-    backgroundColor: "#212832"
-    textColor: "{colors.tx3}"
-    typography: "{typography.label}"
-    rounded: "{rounded.sm}"
+    backgroundColor: "#212329"
+    textColor: "{colors.tx2}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.chip}"
     padding: "0 6px"
-    height: "18px"
-  tag-pink:
+    height: "20px"
+  badge:
+    backgroundColor: "transparent"
+    textColor: "{colors.tx2}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.chip}"
+    padding: "0 8px"
+    height: "22px"
+  badge-on:
     backgroundColor: "{colors.ac-tint}"
     textColor: "{colors.ac-2}"
-  tag-ok:
-    backgroundColor: "{colors.ok-bg}"
-    textColor: "{colors.ok}"
-  tag-warn:
-    backgroundColor: "#2a2415"
-    textColor: "{colors.warn}"
-  tag-info:
-    backgroundColor: "{colors.info-bg}"
-    textColor: "{colors.info}"
-  input-text:
-    backgroundColor: "{colors.input-bg}"
-    textColor: "{colors.tx}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
-    padding: "0 10px"
-    height: "30px"
-  switch:
-    backgroundColor: "#262d37"
-    rounded: "{rounded.switch}"
-    width: "34px"
-    height: "20px"
-  switch-on:
-    backgroundColor: "{colors.ac}"
   banner:
     backgroundColor: "{colors.raised}"
     textColor: "{colors.tx2}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.md}"
+    typography: "{typography.secondary}"
+    rounded: "{rounded.control}"
     padding: "9px 12px"
-  banner-warn:
-    backgroundColor: "{colors.warn-bg}"
-    textColor: "#e4d3a6"
-  banner-error:
-    backgroundColor: "{colors.bad-bg}"
-    textColor: "#f0b6b6"
-  banner-info:
-    backgroundColor: "{colors.info-bg}"
-    textColor: "#a9c4e4"
-  banner-ok:
-    backgroundColor: "{colors.ok-bg}"
-    textColor: "#9fdcbf"
-  table-header:
-    backgroundColor: "{colors.rail}"
-    textColor: "{colors.tx3}"
-    typography: "{typography.label}"
-    padding: "0 12px"
-    height: "30px"
-  table-row:
-    backgroundColor: "{colors.panel}"
-    textColor: "{colors.tx}"
-    typography: "{typography.body-sm}"
-    padding: "10px 12px"
-  table-row-dense:
-    padding: "8px 12px"
-    height: "46px"
-  table-row-hover:
-    backgroundColor: "{colors.row-hover}"
-  table-row-selected:
-    backgroundColor: "{colors.row-selected}"
-  table-row-locked:
-    textColor: "{colors.tx3}"
-  table-row-done:
-    backgroundColor: "{colors.row-done}"
-  table-row-failed:
-    backgroundColor: "{colors.row-failed}"
-  runbar:
-    backgroundColor: "{colors.rail}"
-    textColor: "{colors.tx2}"
-    typography: "{typography.body-sm}"
-    padding: "0 18px"
-    height: "60px"
-  snav-item:
-    backgroundColor: "transparent"
-    textColor: "{colors.tx}"
-    typography: "{typography.body}"
-    padding: "11px 16px"
-  snav-item-on:
-    backgroundColor: "{colors.ac-tint}"
-    textColor: "{colors.ac-2}"
-  src-row:
-    backgroundColor: "transparent"
-    textColor: "{colors.tx}"
-    typography: "{typography.body-sm}"
-    padding: "0 14px"
-    height: "42px"
-  src-row-on:
-    backgroundColor: "{colors.ac-tint}"
-    textColor: "{colors.ac-2}"
+  progress-track:
+    backgroundColor: "{colors.track}"
+    rounded: "{rounded.track}"
+    height: "4px"
+  progress-buffered:
+    backgroundColor: "{colors.buffered}"
+  progress-played:
+    backgroundColor: "{colors.ac}"
+  chapter-seg:
+    backgroundColor: "{colors.track}"
+    rounded: "{rounded.track}"
+    height: "4px"
+  chapter-seg-dirty:
+    backgroundColor: "{colors.ac}"
+  playhead-knob:
+    backgroundColor: "{colors.ac}"
+    rounded: "{rounded.knob}"
+    size: "16px"
   dialog:
-    backgroundColor: "{colors.panel}"
+    backgroundColor: "{colors.rail}"
     textColor: "{colors.tx}"
-    typography: "{typography.body}"
-    rounded: "{rounded.md}"
+    rounded: "{rounded.control}"
+    padding: "14px 18px"
     width: "min(1000px, 100%)"
 ---
 
@@ -279,309 +226,237 @@ components:
 
 ## Overview
 
-**Creative North Star:「深色審核工作台」（The Dark Review Bench）**
+**Creative North Star: "彈幕播放器的時間軸"**
 
-這個世界不是在這裡發明的。biliTidy 是同作者 biliFavOrg（收藏夾）與 biliFollowCleaner（關注）
-兩個擴充功能的合併，兩邊本來就共用同一組 token 與同一套版面語法；合併把兩份 CSS 收成
-`src/ui/styles.css` 這唯一一份，色票、4px 圓角、1px 分隔線、狀態色點、
-「頂列／內容／底部作業列」的滿版高度網格逐字沿用。這份文件記錄的是**合併後實際 build 出來的落點**，
-不是規劃書：凡與前身文件有出入的地方，以本檔為準（見各節的「與前身的差異」）。
+這個世界借用觀眾天天在用的播放器語法。底是影片黑的平塗色，分層只靠 1px 的線與極小的明度差；螢幕上不該有光暈、投影或漸層，因為播放器的畫面裡只有內容與控制列。每一頁的底部都是控制列：左邊是「你正要執行的批次」與執行它的按鈕，中段是進度軌或章節軌，右邊是時間碼式的讀數。任務不是抽象的百分比，而是一條分成「未播／已緩衝／已播」三段的軌；關注的安靜門檻不是一個表單欄位，而是一條貫穿整張審核表的播放頭。
 
-畫面像一張擺在暗房裡的工作檯：底色 `ground` 幾乎全黑，往上分 rail、panel、raised 三層淺一點的灰藍，
-層與層之間只靠 1px 的 `line` 分開，沒有浮起來的卡片、沒有陰影。資訊密度高——密表列高 46px、
-控制項 30px、正文 13px、次要文字 12px——因為使用者一次要看幾百到幾千列，每多一分留白就少看幾列證據。
-粉色 `ac` 是唯一的重點色，只用在「你選了什麼」與「你正要做什麼」上。
+粉色（`ac` #ff5c8d，B 站粉提亮到黑底上站得住的亮度）在這裡是「播放頭的顏色」：它只標示現在、你選的、以及你按下去會發生事情的那顆按鈕。狀態不用粉色，狀態走彈幕色板——黃、綠、紅、淡藍是彈幕本來就會飄過去的顏色，讓「超過門檻」「還在投稿」「失敗」「從未投稿」各自有一眼認得出的色相；但顏色永遠不是唯一訊號，狀態一律是「色點＋文字」或「圖示＋文字」。
 
-四個分頁（整理收藏 / 收藏夾 / 關注 / 設定）是平輩，沒有首頁、沒有儀表板入口。
-介面本身不表演：動態只有狀態色 0.15s 過場、進度條的 scaleX、載入轉圈與開關圓鈕的 transform，
-`prefers-reduced-motion` 一律關掉。深色是唯一模式（`color-scheme: dark`）。
-字型走系統堆疊——那是擴充功能不連外抓資源的結果，不是排版主張。
+密度是工具的密度而不是儀表板的密度：13px 的介面字、12px 的次要字、46px 的密表列高、4px 的圓角。所有數字（時間碼、計數、天數、mid、端點名、預設值）走內建的 Spline Sans Mono 並開 tabular-nums，讓上下列對得齊。介面只有深色一套，沒有 `prefers-color-scheme` 分支。
 
 **Key Characteristics:**
-- 一層層變淺的深色面（`#0c0e11` → `#111419` → `#151920` → `#1b2028`），輸入框反而更暗
-- 1px 分隔線取代卡片與陰影；全域唯一的 `box-shadow` 是輸入焦點的粉色光暈
-- 單一重點色 `#ff5c8d`，只標「選取」與「主要動作」（品牌記號與排序箭頭是兩個系統標記例外）
-- 所有可比較的數字走 tabular-nums，天數、mid、時間、端點名另外走等寬字
-- 圖示一律是 16px 網格、1.5 描邊、`aria-hidden` 的手繪 SVG（`icons.tsx` 共 23 個），沒有 emoji、沒有圖示字型
-- 滿版高度三段式：48px 頂列／可捲內容／60px 底部作業列
-- 唯一被允許的覆蓋層是 `.dlg` 檢視視窗：平的，不投影，4px 圓角
+
+- 影片黑的平塗底（#0c0c0e），四階中性面靠 1px 線分層，全域零 box-shadow
+- 粉色只給「現在／你選的／主要動作／焦點」，其餘一律中性
+- 彈幕色板承擔狀態，且色彩永不獨自傳訊
+- 「48px 頂列／內容／64px 控制列」的滿版高度三段網格，每頁自己捲
+- 讀數與識別符走內建等寬（Spline Sans Mono, tabular-nums），散文走系統堆疊
+- 4px 圓角的控制項、圓形的旋鈕與播放頭、2px 圓端的軌
 
 ## Colors
 
-深灰藍的中性階，配一支提亮過的 B 站粉，再加四支只在語意場合出現的狀態色。
+一套從影片黑往上疊四階的中性面，配一個粉色重點與四個彈幕狀態色；沒有第二個裝飾色。
 
 ### Primary
-- **提亮 B 站粉 Bilibili Pink**（`ac`）：選取狀態（分面、chip、來源列、設定側欄的目前項）、主要動作按鈕、
-  進度條填色、焦點環、caret、`::selection`、品牌記號、排序箭頭。原生 `#fb7299` 在這個底色上只有 4.6:1，提亮後才站得住。
-- **淺粉 Soft Pink**（`ac-2`）：粉底上的文字（`.facet.on`、`.chip.on`、`.tag.pink`、`.snav-item.on`）與連結預設色；連結 hover 才轉成 `ac`。
-- **粉底 Pink Wash**（`ac-tint`）／**粉線 Pink Hairline**（`ac-line`）：選取態的底與框，永遠是低飽和的暗紅粉，不是實心粉。
 
-### Secondary（狀態色，只做語意）
-- **綠 Confirmed**（`ok`）：完成的列、流程步驟的打勾、已驗證標籤、收藏夾描述覆蓋率的量條。
-- **琥珀 Over Threshold**（`warn`）：超過不活躍門檻的天數、AI 草稿（描述草稿、採用草稿的按鈕）、風控／取消的橫幅。
-- **紅 Failed**（`bad`）：失敗的列、破壞性動作的按鈕與它旁邊的就地確認句。
-- **藍 Neutral Info**（`info`）：中性告知橫幅、互相關注標籤、請求紀錄裡的端點名（`#8fb0d8`）。
+- **播放頭粉 Playhead Pink** (`ac`): 現在在哪、你選了什麼、你要按的那一顆。用在：主按鈕底色、分頁 active 的 3px 段、選取列的邊界訊號、作用中章節段與其播放頭、審核表的播放頭與已播進度、焦點框、caret、排序箭頭、開關打開時的軌。除了這幾處，介面上不該再出現粉色的面。
+- **淺粉 Soft Pink** (`ac-2`): 粉底之外的粉「字」。連結、作用中 chip／分面／badge 的文字、播放頭旁的天數、目前所在章節的編號。
+- **粉薄膜 Pink Tint** (`ac-tint`) 與 **粉線 Pink Line** (`ac-line`): 被選中的容器底與邊框——14% 不透明度的膜，足以說明「這一個是作用中的」，又不會蓋掉底下的文字。
+- **粉底墨 Pink Ink** (`ac-ink`): 只出現在粉色實心面上的字色。
 
-每支狀態色都有配套的底（`*-bg`）與線（`*-line`），三者成組使用，不混搭。
+### Secondary（彈幕色板）
+
+四個狀態色的語意是固定的，不可以借去做裝飾：
+
+- **彈幕黃 Danmaku Yellow** (`warn`): 安靜超過門檻的天數、AI 產生但還沒被採用的草稿、需要注意但還沒壞掉的橫幅。
+- **彈幕綠 Danmaku Green** (`ok`): 還在投稿、已完成、寫入成功的請求列、收藏夾容量計。
+- **彈幕紅 Danmaku Red** (`bad`): 失敗、破壞性動作、錯誤橫幅與錯誤狀態的頂列。
+- **彈幕淡藍 Danmaku Blue** (`info`): 從未投稿之類的中性事實、端點名、資訊橫幅。
+
+每個狀態色都有一組 `-bg`／`-line`（例如 `warn-bg`／`warn-line`）：深底薄膜配同色系的邊，給標籤與橫幅用。狀態的文字色一律取亮色本身，橫幅的文字則取該色的淡化版以維持可讀性。
 
 ### Neutral
-- **底 Ground**（`ground`）：文件底色。
-- **軌道 Rail**（`rail`）：頂列、左軌、右欄、底部作業列、表頭、讀數條的頭——「框住內容的東西」都是這一層。
-- **面板 Panel**（`panel`）：中央內容區與對話框，比 rail 亮一階。
-- **抬起 Raised**（`raised`）：次要按鈕與中性橫幅的底。
-- **凹陷 Input**（`input-bg`）：輸入框、請求紀錄、`.pre`、chip 選擇器——比它坐的面更暗。
-- **線 Line**（`line`）／**強線 Line 2**（`line-2`）：`line` 分隔區塊，`line-2` 描控制項的邊與對話框的外框。
-- **文字三階**（`tx` / `tx2` / `tx3`）：主要內容／次要說明／標籤與已停用。
-- **列色五支**（`row-hover` / `row-selected` / `row-done` / `row-failed` / `row-quiet`）：表格列的互動與結果底色。
-  `row-quiet` 是「這一列不是資料」（新增收藏夾列、草稿原值）。**這五支在 CSS 裡是字面值，不是 custom property**；
-  新畫面要用同一批值，不要再造第六支。
+
+- **影片黑 Ground** (`ground`): 應用最外層與頂列。
+- **軌道灰 Rail** (`rail`): 左軌、右欄、底部控制列、對話框、表頭條——所有「控制」而非「內容」的面。
+- **面板黑 Panel** (`panel`): 中央內容區與 sticky 表頭；比 rail 更暗，內容區永遠是這個世界最沉的那一面。
+- **抬起灰 Raised** (`raised`): 次要按鈕與橫幅的面。
+- **凹陷黑 Input** (`input-bg`): 輸入框、程式碼區塊、紀錄框——比底還深一階，讓「可以打字的地方」看起來是凹的。
+- **線 Line** (`line`) 與 **強線 Line 2** (`line-2`): 1px 的分隔線與控制項邊框。分層只有這兩條線可用。
+- **主要／次要／三級文字** (`tx` / `tx2` / `tx3`): 內容、說明、標籤與停用。
+- **未播 Track** (`track`) 與 **已緩衝 Buffered** (`buffered`): 進度軌與章節軌的底、以及快取命中的那一段。
+- **列底色**（`row-hover` / `row-selected` / `row-selected-hover` / `row-draft` / `row-done` / `row-failed`）: 表格列的六種狀態底，全部是中性面加一絲對應色相，永遠不到能與文字搶注意力的飽和度。
 
 ### Named Rules
-**The Accent-Means-State Rule.** 重點色只給三件事：**選取**（`tr.sel`、作用中的分面與 chip、來源列、設定側欄的目前項）、
-**主要動作**（`.btn.primary`、進度填色、載入轉圈）與**焦點環**；連結用淡一階的 `ac-2`，hover 才轉成 `ac`。
-品牌記號與排序箭頭是僅有的兩個系統標記例外。除此之外不出現粉色，也不用它做裝飾。
 
-**The Dot-Plus-Word Rule.** 狀態永遠是「6px 色點＋文字」或「圖示＋文字」。顏色不可以是唯一訊號——
-失敗的列除了紅底還寫著原因，鎖住的列除了變暗還有鎖頭圖示、文字與 `title` 說明。
+**The Playhead Rule.** 粉色只有五種合法用途：現在、選取、主要動作、焦點、已播。任何「為了好看」而出現的粉色都是錯的；使用者特意歸檔的訊號（例如特別關注）用加重字重而不是上色。
 
-**The Danger-Is-Earned Rule.** 紅色只給兩種東西：已經失敗的結果，以及使用者正要按下的破壞性動作
-（`.btn.danger` / `.btn.danger.solid` 與它旁邊的 `.status-failed` 確認句）。不用紅色做強調。
+**The Danmaku Status Rule.** 狀態色的語意鎖死：黃＝超過門檻或 AI 草稿，綠＝進行中或完成，紅＝失敗，淡藍＝從未投稿或中性告知。不新增第五個狀態色，也不把狀態色借給非狀態的元素。
 
-**The Amber-Means-Draft Rule.** 琥珀是「機器寫的、還沒被你認可的東西」與「超過門檻的數字」，
-兩者共用同一支 `warn`。實心琥珀按鈕（`.btn.warn`，24px 小尺寸）只出現在「採用草稿」這一種動作上。
+**The Dot-Plus-Text Rule.** 顏色永遠不是唯一訊號。每一個狀態都必須同時有文字（或圖示＋文字）；橫幅一律以 6px 圓色點開頭。
 
 ## Typography
 
-**Body Font:** 系統堆疊（`system-ui, -apple-system, Segoe UI, PingFang TC, Microsoft JhengHei, sans-serif`）
-**Numeric/Mono Font:** `ui-monospace, Cascadia Mono, Consolas, SF Mono, monospace`（`--mono`）
+**Body Font:** 系統堆疊（system-ui / -apple-system / Segoe UI，CJK 靠 PingFang TC、Microsoft JhengHei）
+**Mono Font:** Spline Sans Mono（隨擴充功能打包，OFL，可變字重 300–700），fallback 為 ui-monospace / Cascadia Mono / Consolas
 
-**Character:** 沒有品牌字。介面用宿主系統的 UI 字（擴充功能不連外抓字型，CJK 交給 PingFang TC / Microsoft JhengHei），
-性格全部來自尺寸與字重的落差；真正被設計過的是數字——凡是要上下對齊、要一眼比大小的欄位一律走等寬與 tabular-nums。
-字級只有六階（22 / 19 / 15 / 13 / 12 / 11），沒有中間值。
+**Character:** 介面文字刻意不表演——它用使用者作業系統自己的字，讀起來像系統工具而不是網站。所有會被拿來比大小、對得齊的東西（時間碼、計數、天數、mid、端點、預設值）換成等寬並開 tabular-nums：等寬字是這個世界唯一的「字型事件」，出現的地方就是可以用眼睛掃過去比對的地方。
 
 ### Hierarchy
-- **Display**（600、22px、-0.01em、tabular-nums）：只有進度儀表的計數（`.gauge-count`），整個產品最大的一個字。
-- **Headline**（600、19px）：儀表的階段名（`.gauge-phase`）與設定頁成本讀數的數字（`.read-item b`）。
-- **Title**（600、15px）：內容區標題（`.c-title`）與門檻輸入框裡的天數（等寬）。
-- **Body**（400、13px、1.5）：根字級。步驟標題、欄位 label、分頁名、來源列名稱、`.snav-item .nm` 走 13px/500–600。
-- **Body-sm**（400、12px）：表格儲存格、按鈕、chip、橫幅、`.why`、說明文字——畫面上最常見的字級。
-- **Label**（500、11px、0.08em）：左軌與右欄的區段標題（`.lbl`）；也是 `.tag`、`.acct-sub`、`.vid-sub`、
-  `.folder-sub`、計數等第二行資訊的字級（這些不加字距）。
-- **Numeric**（等寬、tabular-nums、11px）：mid、時間、請求紀錄、端點名。
-- **Numeric-lead**（等寬、600、14px）：審核表裡的不活躍天數與儀表讀數（`.gauge-item b`）。
+
+- **Count**（等寬 600、22px、tabular-nums）：進度儀表的「已完成／總數」。全介面最大的字，而且是個數字。
+- **Readout**（等寬 600、20px）：設定頁成本讀數條的三個數。
+- **Headline**（600、19px、-0.01em）：中央區標題與任務階段名。
+- **Title**（700、14px、-0.01em）：頂列品牌字。
+- **Lead number**（等寬 600、14px）：一列裡最重要的那個數字（安靜天數、儀表的每一項讀數）。
+- **Body**（400、13px、1.5）：內容文字、表單標籤、按鈕主要動作、帳號名。600 為其加重版。
+- **Secondary**（400、12px）：說明、提示、表格儲存格、次要按鈕、chip、標籤、橫幅。介面上絕大多數的字。
+- **Label**（600、12px、+0.08em、`tx3`）：軌／欄段落的段名。只用來標一個段落的開頭。
+- **Mono**（等寬 400、12px、tabular-nums）：mid、端點名、預設值、年份刻度、章節編號、時間戳。
 
 ### Named Rules
-**The Tabular Number Rule.** 每一個會被上下比較的數字都開 tabular-nums：天數、分面計數、統計讀數、儀表計數、
-成本估算、mid、時間。mid、天數、時間、bvid、端點名另外走等寬字。數字不可以用比例字排在表格裡。
 
-**The One Loud Number Rule.** 一列只有一個數字比周圍高一階——關注審核表裡是不活躍天數（14px/600，超標時轉琥珀），
-其餘欄位一律 12px。要在新表格裡強調別的欄位，得先降掉這一個。
+**The Time-Code Rule.** 等寬只給讀數與識別符：時間碼、計數、天數、mid、端點名、預設值、章節與步驟編號。散文永遠用介面字——章節摘要與說明即使裡面夾著數字，也只有數字那一段換等寬。
 
-**The Eleven-Pixel Floor Rule.** 11px 是最小字級，而且只給標籤與第二行資訊；正文不低於 12px。
+**The 12px Floor Rule.** 沒有比 12px 更小的字。需要更弱的層級就降色（`tx2` → `tx3`），不降字級。
 
-**The Label-Is-A-Section-Header Rule.** `.lbl`（11px/500/0.08em）只用來標**一個區段**（左軌／右欄／面板的段落標題）。
-它不放在標題正上方當引言小字，也不用來裝飾單一元素。
+**The Tabular Rule.** 任何會出現在上下相鄰列的數字都要 `tabular-nums`；一欄數字對不齊，這張表就不能用眼睛掃。
 
 ## Layout
 
-**外殼**：`html/body/#root` 滿版高度，`.app` 是 `grid-template-rows: 48px 1fr` ＋ `grid-template-columns: minmax(0, 1fr)`
-的兩列——頂列，以及裝著頂層橫幅與目前分頁的 `.app-body`。整頁不捲，只有內容區捲。
+**三段式滿版高度。** 應用是 `48px 頂列 / 1fr` 的網格，內容區再切成 `1fr / 64px 控制列`。整個介面不捲動，捲動發生在各自的欄裡（左軌、中央 `.c-body`、右欄）。這不是一條長頁面。
 
-**分頁**：每個分頁自己是 `grid-template-rows: 1fr 60px`（可捲內容 ＋ 底部作業列）；沒有作業列的用 `.page.no-bar`。
+**頂列**：品牌記號＋名字、四個平行分頁（整理收藏／收藏夾／關注／設定）、右端的登入狀態。作用中的分頁用一段 3px、上緣圓角的粉色「已播」段壓在頂列的分隔線上。
 
-**工作區有兩種形狀**：
-- `.work.rail-center`：`288px minmax(0, 1fr)`——左軌（篩選／來源）＋ 中央。關注審核、收藏夾、設定用這個。
-- `.work.rail-center-side`：`280px minmax(0, 1fr) 340px`——整理收藏的設定畫面：來源軌 ＋ 目標夾表 ＋ 右邊「這一批」。
-  右欄（`.side`）是 rail 層、左邊一條 1px 線，段落用 `.side-sec`（`14px 16px`）。
+**內容的三種欄型**：`左軌 320px + 中央`（整理、關注）、`左軌 280px + 中央 + 右欄 340px`（審核時的整理頁）、`中央 1fr + 右欄 520px`（設定頁的雙欄）。中央欄一律 `minmax(0, 1fr)`：寬表格在自己的 `.c-body` 裡橫向捲，永遠不把版面撐寬。左軌是 `rail` 面、中央是 `panel` 面，靠 1px 線分界。
 
-**中央**（`.center`，panel 層）是 `.c-head`（`14px 18px 12px`，標題＋說明）／`.c-tools`（`10px 18px`，搜尋與全選）／
-`.c-body`（可捲）三段，段與段之間一條 1px 線；純內容用 `.c-pad`（`16px 18px`）。
-設定表單收在 `max-width: 860px`，說明文字收在 58–76ch。
+**控制列**：高 64px，`rail` 面，上緣 1px 線。左邊是這一批＋執行它的按鈕；按鈕變灰時旁邊一定寫得出原因（12px、`tx3`、允許換兩行）。中段放進度軌或章節軌，右端是靠右的讀數列。破壞性動作在列內二次確認，不開 modal。
 
-**節奏**：內距走 4／6／8／10／12／14／16／18 的階。左軌區段 `.rail-sec` 是 `12px 16px`，
-密表儲存格 `8px 12px`（列高 46px），一般表格儲存格 `10px 12px`（列高隨內容），
-控制項高 30px（主要動作 34px、分面 28px、chip 26px、小按鈕與讀數列 24–26px、來源列 42px）。
+**節奏**：4 / 6 / 8 / 10 / 14 / 16 / 24。段落內距 `14px 16px`（軌）與 `16px 24px`（中央）；表格儲存格 `10px 12px`，密表 `8px 12px`、列高 46px；分隔一律 1px 線，不用空白製造分組。文字量測的上限是字元數而不是像素：說明 60ch、導言 72ch、步驟 64ch。
 
-**捲動邊界**：可捲的左軌底部掛一道 28px 的漸層（透明 → rail）說明「下面還有」，最後一段多留 36px 內距。
-
-**窄視窗（單一斷點 `max-width: 900px`，一個 media block 四件事）**：
-
-1. **順流**：`.work.rail-center` **與** `.work.rail-center-side` 都改成 `display: block`，
-   左軌／右欄以自然高度排在內容上下、整個工作區一起捲；左軌不再自己截高度，捲動漸層關閉。
-   `.page` 那一列改成 `1fr auto`。
-2. **作業列換行**：`.runbar` 走 `flex-wrap`、內距收到 `8px 12px`、行距 6px，**不再橫向捲**；
-   `.why` 與 `.read-inline` 各自 `flex: 1 1 100%` 佔滿一行，分隔線（`.sep`）隱藏。
-3. **只有密表改成堆疊列**：`table.grid.dense`（關注審核表）變成 block、`thead`（連同排序按鈕）不顯示，
-   每一列是 `36px minmax(0, 1fr)` 的兩欄——左欄是跨四列的勾選框，右欄由上而下是名稱＋標記、
-   天數（折進 `.acct-days`）＋mid、分組、最新投稿（兩行截斷）＋日期、狀態；`td.col-days`、`td.col-followed`
-   與空的 `td.col-group` 不畫。底色改掛在 `tr` 上。**其他表格（影片審核表、收藏夾表、請求表）維持原樣，
-   在 `.c-body` 裡橫向捲。**
-4. **頂列與橫幅**：品牌只留記號（`.brand-name` 隱藏）、「重新檢查」只留圖示、帳號只留頭像；
-   分頁列自己橫向捲並在右緣 mask 淡出；橫幅可換行，動作落到自己一行、靠左。
+**斷點**：兩個。`≤1200px` 先把時間軸欄讓給證據欄（`display: none`，`table-layout: fixed` 自己重分寬度）。`≤900px` 是「窄視窗」的完整規則：左軌與右欄改成順流排在內容上下、整個工作區一起捲（`display: block`，不是被壓扁的 grid）；控制列改成換行而不是橫向捲，章節軌收起；關注審核表改成堆疊列（勾選框在左，右側由上而下是名字、天數＋mid、分組、最新投稿），表頭與時間軸欄不畫；設定列從兩欄變一欄；頂列只留品牌記號、圖示版重新檢查與頭像，分頁列自己橫向捲並在右緣淡出。
 
 ### Named Rules
-**The Three-Band Rule.** 每一個分頁都是「頂列／內容／底部作業列」。作業列在每一頁都是同一件事：
-你正要執行的批次，以及執行它的按鈕。不為了某個畫面拿掉這條帶子或改變它的意思。
 
-**The Line-Not-Card Rule.** 區塊之間只用 1px `line` 分開，層次靠底色差。不用卡片、圓角容器或陰影切版面。
+**The Three-Band Rule.** 每一頁都是「頂列／內容／控制列」。新畫面只能決定內容區怎麼分欄，不能改動這三段的存在或高度。
 
-**The Table-Never-Widens-The-Window Rule.** 中央欄一律 `minmax(0, 1fr)`；表格太寬就在 `.c-body` 裡自己橫向捲。
-頂列同理：`.app` 的 `minmax(0, 1fr)` 讓品牌＋四個分頁＋帳號不會把外殼撐寬。
+**The Control-Bar Rule.** 控制列在每一頁講同一句話：這一批是什麼、執行它的按鈕、以及按鈕變灰時的原因。它不是工具列，不放與「執行這一批」無關的東西。
 
-**The Control-On-Top Rule.** 決定整張表要看什麼的那個控制項（關注的不活躍門檻、整理的來源夾）永遠是左軌第一段，
-下面才是分面；它一動，所有分面計數與表格內容即時重算，不重新抓資料。
+**The No-Wider-Than-Window Rule.** 每一個 grid 的內容欄用 `minmax(0, 1fr)`，寬內容在自己的捲動容器裡橫向捲。介面本身永遠不比視窗寬。
 
 ## Elevation & Depth
 
-沒有陰影系統。深度完全靠色調分層：`ground` → `rail` → `panel` → `raised` 四階，各差一小步亮度，
-邊界一律是 1px `line`。輸入框是唯一往下凹的面（`input-bg` 比周圍都暗），請求紀錄與 `.pre` 也用它。
+這個世界沒有陰影。全域零 `box-shadow`，零投影、零光暈。深度只由三件事表達：四階中性面的明度差（`input-bg` < `panel` < `ground` < `rail` < `raised`）、1px 的分隔線、以及覆蓋層的背幕（`rgba(4,4,6,0.7)`）。唯一的覆蓋層是檢視視窗（「送了什麼」「這次會做什麼」），它靠背幕與一條 `line-2` 邊框浮起來，不加陰影、也不放大圓角。
 
-唯一的覆蓋層 `.dlg` 也不投影：它靠 `rgba(4, 6, 8, 0.66)` 的背幕、panel 底色與 1px `line-2` 外框分層，
-圓角仍是 4px——覆蓋層不因為浮在上面就換一套材質。
+焦點同樣不發光：輸入框聚焦是邊框轉粉，其他可聚焦元素是 2px 粉色 `outline` 加 1px offset。
 
-全域唯一的 `box-shadow` 是輸入焦點的粉色光暈（`0 0 0 3px rgba(255, 92, 141, 0.18)`，同時把邊框換成 `ac`）；
-其餘可聚焦元素用 `:focus-visible { outline: 2px solid var(--ac); outline-offset: 1px }`。
+漸層只有兩處，而且兩處都在描述「還有更多」或「不確定」：左軌捲動區底部的 28px 淡出遮罩（以及窄視窗分頁列右緣的 mask），還有時間軸上表示「從未投稿／查不到」的 4px 虛線軌。
 
 ### Named Rules
-**The No-Shadow Rule.** 這個世界不投影。要區分兩個面就換底色再加一條 1px 線；`box-shadow` 只允許出現在焦點狀態。
 
-**The Recessed Input Rule.** 可輸入的東西比它坐的面更暗（`input-bg`），可按的東西（`.btn`）比它坐的面更亮（`raised`）。
+**The No-Glow Rule.** 這個世界不發光。焦點是實色邊框或 outline，不是光暈；抬起是明度差，不是投影。任何 `box-shadow` 都是錯的。
+
+**The Two-Gradients Rule.** 漸層只有兩種合法用途：捲動邊界的淡出遮罩，以及表示「沒有資料」的虛線軌。裝飾性漸層一律不畫。
 
 ## Shapes
 
-矩形世界，圓角小到幾乎只是去毛邊：控制項、按鈕、橫幅、chip、對話框、容器一律 4px（`--r`），
-小標籤與縮圖 3px，進度條與骨架 2px，開關 10px 膠囊。真正的圓形只留給頭像、狀態色點（6px）、
-流程小點（5px）、步驟編號圈（22px）與載入轉圈（12px）。
+形狀語言分兩類：**控制項是 4px 的方角矩形，會動的東西是圓的。**
 
-邊框只有兩種寬度：1px（分隔與描邊）與 2px（分頁的 active 底線、焦點外框）。
-控制項描 `line-2`，區塊分隔用 `line`；表格與側欄裡的次級分隔線降到半透明
-（`rgba(36, 42, 51, 0.5 / 0.55 / 0.6 / 0.9)`）或虛線。
+- 控制項圓角 4px（`--r`）：按鈕、輸入框、chip、分面、橫幅、對話框、程式碼區塊、紀錄框。
+- 更小的貼片 3px：標籤、badge、收藏夾縮圖、封面、pin。
+- 軌 2px 圓端：進度軌、章節段、容量計。
+- 完全圓形：頭像、狀態色點（6px）、時間軸上的投稿標記（12px）、章節播放頭（14px）、審核表播放頭的拇指（16px）、開關的旋鈕、步驟編號圈（22px）。
+- 邊框只有 1px 一種粗細；虛線邊只用在「還沒有東西」的 ghost chip 與虛線軌。
 
-**The Four-Pixel Rule.** 需要圓角的東西一律 4px。要更圓只有一種理由：它本來就是圓的（頭像、色點、開關）；
-要更方只有一種理由：它比 4px 還小（18px 標籤、4px 進度條）。
+圖示一律是自己畫的 SVG（`ui/components/icons.tsx`），16 格線稿、`currentColor`、圓端圓角接合。品牌記號是一個帶 28 圓角的深色方塊，裡面一個白色打勾，下緣一條粉色的進度軌與播放頭圓鈕——世界的縮圖。
+
+### Named Rules
+
+**The 4px-and-Round Rule.** 能點的方形東西是 4px 圓角；能拖或代表「一個點在時間上」的東西是正圓。不存在第三種圓角語言，也不存在藥丸形的按鈕。
+
+**The Drawn-Icon Rule.** 圖示只用 `icons.tsx` 裡畫好的 SVG。不用 emoji、不用符號字元、不用圖示字型——系統字型缺字會變成豆腐方塊。
 
 ## Components
 
+元件的性格是「像播放器的控制項一樣安靜」：預設低對比，靠 hover 與選取才亮起來，過場一律 0.15s ease-out 且只動顏色或 transform。
+
 ### Buttons
-- **Shape:** 4px 圓角，1px `line-2` 描邊，行內 flex、圖示與文字間距 6px，`flex: none`、不換行。
-- **Default:** raised 底、`tx` 字、30px 高、左右 12px；hover 轉 `#232935`、邊框轉 `#3f4854`；`:disabled` 走 `opacity: 0.4` 與 `not-allowed`。
-- **Primary:** 粉底、深色字（`ac-on`）、600、13px、34px 高、左右 16px——**每個分頁只有一顆**，永遠在作業列左端，永遠帶著數字。
-- **Warn:** 實心琥珀、深色字、600，只給「採用 AI 草稿」，永遠是 `.small`（24px）。
-- **Danger / Danger solid:** 前者是紅字紅框透明底（觸發破壞性動作與撤銷），後者是實心紅底深色字（已確認的那一下）。
-- **Quiet:** 透明底無框、`tx3` 字，hover 才浮出 raised 底；用於「清除結果」這類收尾動作。
-- **Small:** 24px 高、11px 字，用在分頁器、表格內與草稿動作。
-- **Link:** 沒有邊框與底色的粉色文字鈕（`ac-2`，hover 轉 `ac` 並加 3px offset 底線），用在「重試」「重新檢查」這類行內動作。
-- **Transition:** 只過場 `background-color` 與 `border-color`，0.15s ease-out。
 
-### Chips
-- **Style:** 26px 高、透明底、`line-2` 描邊、`tx2` 字、12px、tabular-nums。
-- **State:** `.on` 換成 `ac-tint` 底、`ac-line` 邊、`ac-2` 字、600；hover 只提亮邊框與文字；`.ghost` 是虛線邊＋`tx3`。
-- **Modifier size:** 審核表列裡的 `.multi .chip` 縮到 22px／11px——它是那一列的修飾，不是又一個目標。
+- **Shape:** 4px 圓角（`--r`），1px `line-2` 邊框。
+- **Default:** `raised` 底、`tx` 字、12px 500、高 30px、左右 12px。
+- **Primary:** 粉底、`ac-ink` 字、13px 600、高 34px、左右 16px——比次要按鈕高 4px，因為它是控制列上的播放鍵。
+- **Hover / Focus:** 底色與邊框各亮一階（`#23252c` / `#40444e`；主按鈕 `#ff789f`）；焦點是 2px 粉色 outline。
+- **Danger:** 預設是紅字＋紅邊的空心；只有二次確認後的那一顆才是紅底實心（`solid`）。
+- **Quiet:** 全透明、`tx3` 字，hover 才浮出 `raised` 底。
+- **Disabled:** `opacity: 0.4`＋`not-allowed`，而且旁邊一定有一句 `.why` 說明為什麼。
 
-### Facets（左軌篩選）
-- **Style:** 整列可按的 28px 按鈕，無邊框、4px 圓角，名稱靠左（可省略號）、計數靠右（11px、`tx3`、tabular-nums）。
-- **State:** hover 是 `row-hover`；`.on` 是 `ac-tint` 底、`ac-2` 字、600，計數轉半透明粉。
-- **Behavior:** 計數反映「其他分面已經套用之後」的結果，會隨其他選擇一起變動（計數自身有 0.2s 顏色過場）。
+### Chips / Facets / Tags / Badges
 
-### Tags
-- **Style:** 18px 高、3px 圓角、`#212832` 底、`tx3` 字、11px；最大寬 160px，超出用省略號，多的收成 `+N`。
-- **Variants:** `.pink` 給特別關注與 AI 建議的目標夾；`.ok` 給已啟用／已驗證；`.warn` 給 AI 草稿；`.info` 給互相關注。
-  標籤的顏色由**它是什麼**決定，不由語氣挑。
+- **Chip**（可點的篩選或目標）：26px 高、4px 圓角、透明底、`line-2` 邊；作用中＝粉薄膜底＋粉線邊＋淺粉字＋600。`ghost` 變體是虛線邊，代表「還可以加一個」。
+- **Facet**（左軌的篩選列）：28px 高、整列可點、右端是等寬的計數；作用中＝粉薄膜底＋淺粉字。計數反映其他分面套用後還剩多少。
+- **Tag**（唯讀的事實）：20px 高、3px 圓角，中性底；狀態變體用彈幕色板的 `-bg`＋亮色字。使用者自己標記的重要性（特別關注）用 `strong`：加重字重、底色升一階，不上色。
+- **Badge**（章節開頭的適用範圍）：22px 高，`on` 是粉薄膜，`off` 是 `tx3` 加刪除線。
+
+### Cards / Containers
+
+這個世界沒有卡片。容器是「用 1px 線切出來的段」：左軌的 `.rail-sec`、右欄的 `.side-sec`、設定的 `.frow`，一律 `padding: 14–16px`＋下緣 1px `line`，最後一段不畫線。唯一帶邊框的盒子是資料容器（讀數條、紀錄框、程式碼區塊、chip 挑選器）：1px `line` 邊、`input-bg` 底、4px 圓角。
 
 ### Inputs / Fields
-- **Style:** 30px 高、`input-bg` 底、`line-2` 描邊、4px 圓角、12px 字；placeholder 走 `tx3`；
-  文字欄 `max-width: 560px`、數字欄 140px。
-- **Focus:** 邊框轉 `ac` 並加 3px 粉色光暈（全域唯一的 box-shadow）。
-- **Disabled:** `opacity: 0.45`、`not-allowed`。
-- **Field 結構:** label（13px/600）＋控制項＋`.hint`（12px、`tx3`、`text-wrap: pretty`）縱向堆疊，間距 5px、段距 14px。
-- **Search:** 相對定位的容器，放大鏡 SVG 絕對定位在左 9px（`pointer-events: none`），輸入框左內距 28px。
-- **Checkbox vs Switch:** 勾選＝挑東西（原生 15px checkbox，`accent-color: ac`）；開關＝改設定
-  （同一個原生 checkbox 換臉成 34×20 膠囊，圓鈕走 transform）。兩者在同一頁上必須長得不一樣。
 
-### Banners
-- **Style:** 4px 圓角、1px 邊、`9px 12px` 內距、12px 字、`text-wrap: pretty`；色點或圖示在左、動作靠右（`.spacer`）。
-- **Variants:** 中性用 raised；`.warn` 給風控與取消；`.error` 給未登入這類要求使用者行動的錯誤；`.info` / `.ok` 給告知與完成。
-  橫幅的顏色由原因決定。頂層橫幅（header rule 失效）掛在 `.app-body` 上、`12px 16px 0`。
+- **Style:** 32px 高、`input-bg` 底、1px `line-2` 邊、4px 圓角、12px 字。URL／密碼／數字欄自動走等寬。textarea 最低 54px、只允許縱向調整。
+- **Focus:** 邊框轉粉，不加光暈。
+- **Dirty（改過還沒存）:** 邊框轉半透明粉（`ac-line`），與控制列上亮起的章節段是同一個訊號。
+- **Disabled:** `opacity: 0.45`。
+- **SettingRow（`.frow`）:** 左邊是「這是什麼、做什麼、預設是什麼」（13px 600 標題／12px 說明／等寬預設值），右邊是控制項欄（280–420px）。說明永遠在畫面上，不藏進 tooltip。窄視窗收成一欄，說明在上、控制項在下。
+- **勾選與開關的分工:** 勾選框＝挑東西（原生 checkbox，`accent-color` 粉），開關＝改設定（同樣是原生 checkbox，只換一張臉：34×20 的軌、14px 圓鈕、以 `transform` 移動）。同一頁上不可以讓這兩件事長得一樣。
 
 ### Navigation
-- **Top tabs:** 頂列裡 48px 全高的分頁，13px、`tx3` 字，hover 轉 `tx`，active 是 `tx` ＋600 ＋2px 粉色底線（`margin-bottom: -1px` 壓在頂列的分隔線上）。四個分頁是平輩，沒有首頁。
-- **Session badge:** 頂列最右，20px 頭像＋暱稱＋等寬 mid＋「重新檢查」連結鈕；查不到時整塊轉 `bad`。
-- **Settings side nav:** `.snav-item` 是 `11px 16px` 的列，18px 圖示＋13px/500 名稱＋下方一行 11px 摘要；
-  `.on` 是粉底、粉字、粉圖示。**摘要永遠只有一行**（`white-space: nowrap` ＋省略號）——換了行左軌的節奏就斷。
-- **Source rail（整理收藏）:** `.src-row` 42px 高的整列按鈕，`.on` 是 `ac-tint` 底＋`ac-2` 粗體名稱，
-  右端 11px 計數；來源夾另掛實心粉 `.pin` 標記（17px、11px/700）。
 
-### Review Table（招牌元件）
-兩張表共用 `table.grid`：影片審核表（`10px 12px` 儲存格、`td.vtop` 頂端對齊、96×60 封面）
-與關注審核表（`table.grid.dense`：`8px 12px`、列高 46px、整列可點選）。
+- **頂列分頁:** 13px，未選 `tx3`、hover 轉 `tx`、作用中 `tx` 600 並在下緣長出一段 3px 粉色圓端段。四個分頁永遠平行，不做下拉。
+- **設定頁左軌章節:** `34px 編號 + 名稱` 的兩欄列，第二行是一行摘要（超出用省略號，不換行）。作用中＝粉薄膜底、粉色編號、淺粉摘要。章節分三組，組與組之間以 1px 線與組名（12px 600 +0.06em）分開。
+- **控制列的章節軌:** 六段等寬的 4px 軌，段間 3px；第 3 與第 4 段之間留 14px 缺口，標示「AI 專用／共用」的分界。改過沒存的段整段轉粉，目前所在的段上方掛一顆 14px 的圓形播放頭（2px `rail` 描邊）。軌下方是等寬的 01–06 編號，目前那個轉淺粉。
 
-- **Head:** `position: sticky` 的表頭，rail 底、11px/500 標籤色、30px 高；可排序欄位整個標題是按鈕，箭頭用粉色。
-- **Row:** 底部 1px 線，hover 是 `row-hover`（0.15s 過場），可選的列 `cursor: pointer`（點在 `a / button / input` 上不觸發選取）。
-- **Selected:** `tr.sel` 是暗紅粉底 `row-selected`（hover 再深一階）——選取用底色表示，不用邊框、不用額外標記。
-- **Result rows:** 完成的列走 `row-done`、失敗的列走 `row-failed`；結果寫在原地那一列，不另開摘要。
-- **Non-data rows:** 新增收藏夾那一列與草稿原值走 `row-quiet`（比 panel 更沉），表示它不是資料。
-- **Narrow:** 只有 `.dense` 改堆疊列（見 Layout）。
+### 時間軸欄（Signature）
 
-### Locked Row（招牌裝置，兩張表共用）
-狀態未確認的東西在結構上進不了任何批次，而且**看得見**：
-- 關注表裡是「還沒查／查不到活躍度」的帳號（`tr.locked`），影片表裡是失效影片（同一個 class）。
-- 表現一致：整列文字退到 `tx3`（帳號名退到 `tx2`，仍讀得出來）、checkbox `disabled` 並帶 `title` 寫出理由、
-  狀態格是**鎖頭圖示＋一個詞**。
-- **這種列進得了計數、進不了批次。** 不要用隱藏、不要用灰到看不見、不要只留一個圖示沒有字。
+關注審核表的主角，也是這個世界的命名來源。
 
-### Run Bar（招牌元件）
-- **Style:** 60px 高、rail 底、上緣 1px 線、左右 18px、元素間距 8px；群組之間用 22px 的 `.sep` 直線分隔。
-- **Content:** 左端是帶數字的主要動作（`取關 N 個`／`執行 N 筆`）；右端是匯出動作與讀數（`.read-inline`，
-  數字之間用 `#4d5560` 的分隔符）。
-- **The Grey-Button-Has-A-Reason Rule:** 主按鈕變灰時，旁邊**必定**有一行 12px `tx3` 的 `.why` 寫出原因，
-  三種原因寫法統一：沒選東西（`whyNoSelection` / `footerEmpty`）、這一階段沒事可做（`whyRunFinished` / `whyNothingToWrite`）、
-  **另一個長任務在跑**（`app.busyWithOrganise` / `app.busyWithFollows`）。第三種是互斥狀態的唯一表現方式。
-- **Confirm:** 破壞性動作就地二次確認——主按鈕換成一句紅色 `.status-failed small` 說明，
-  加一顆實心／描邊紅按鈕與一顆 quiet 取消，**不開對話框**。
-- **Narrow:** 換行排列，`.why` 與讀數各佔一整行。
+- 表格是 `table-layout: fixed`：勾選 36px、帳號 19%、最新投稿 20%、分組 80px、**時間軸 24%（最寬的百分比欄）**、天數 104px、關注於 92px、狀態 100px。欄位藏起來時 fixed layout 自己重分寬度。
+- **表頭是刻度尺**（40px 高）：年份刻度（等寬 12px＋1px 6px 短刻線）由左至右，軸的右端就是「今天」。
+- **播放頭是原生 `input[type=range]` 換臉**：軌透明、拇指是 16px 粉色圓鈕（2px `panel` 描邊），hover／focus 放大 1.25 倍，鍵盤左右鍵可拖。它綁的是安靜門檻——拖動＝改設定。旁邊貼著等寬的天數標籤，靠右超過 72% 時翻到左邊。
+- **每一列是一條軌**（46px 高）：2px 的未播軌貫穿整列；從最新投稿到今天畫一條 6px、35% 不透明度的安靜期長條，起點是一個 12px 的圓標記，兩者取該列狀態色。沒有投稿或查不到的列改畫 4px 虛線軌＋等寬註記。
+- **門檻在每一列各畫一段 2px 粉色豎線**，上下各多 1px 蓋過列的分隔線，看起來就是一條貫穿整張表的連續播放頭。
 
-### Progress Panel（招牌元件，兩個任務共用）
-- **Gauge:** `18px 20px 16px` 的段落，上排是階段名（19px/600）＋目前標的（`dim small ellipsis`）＋
-  右端計數（22px/600，`done / total` 的分母用 14px `tx3`）；下面 4px 進度條（填色走 `scaleX`，0.2s）。
-- **Readings:** `.gauge-read` 是一排用 1px 線分隔的欄（11px 標籤／14px 等寬數字），
-  兩個任務各自帶自己的兩個讀數；值為 0 的讀數壓淡成 `tx3`——它是「沒發生」而不是一個數字。
-- **Log + skeleton:** 下面是最近幾筆請求（`input-bg` 底的 `.log`，26px 等寬列、11px）與骨架列，
-  骨架預示接下來審核表的形狀（封面 74px／頭像 46px）。停止的控制只有一個，在作業列。
+### Progress track
 
-### Dialog（唯一的覆蓋層）
-- **Backdrop:** `rgba(4, 6, 8, 0.66)` 滿版、24px 內距、置中、`z-index: 50`。
-- **Panel:** panel 底、1px `line-2`、**4px 圓角、不投影**、`min(1000px, 100%)`、最高滿版，內部自己捲。
-- **Use:** 只做檢視——「送了什麼／請求細節」與「這次會做什麼」。**不用它做確認**（確認在作業列就地發生）。
+進度是播放器的進度條，不是百分比文字：4px 高、`track` 底，上面疊兩層——`buffered` 灰段是快取命中的部分，粉色段是真的打了請求的部分。填色用 `scaleX` 而不是寬度，只在合成層動。有快取命中時下方出現 12px 的圖例。儀表區上方是階段名（19px）與等寬 22px 的「已完成／總數」，下方是以 1px 直線分隔的讀數項（已用、預估剩餘、實際速率、任務專屬讀數）。
 
-### Icons
-16px 網格、`fill: none`、`stroke: currentColor`、1.5 描邊、圓端圓角的手繪 SVG，`aria-hidden`，
-顏色一律繼承文字色，實際渲染尺寸 11–18px。品牌記號是一顆打勾的圓（`IconBrand`，17px，粉色），
-與工具列圖示同一個符號。不用 emoji、不用符號字元、不用圖示字型。
+### Tables
+
+- 表頭 sticky、40px 高、`panel` 底、12px 600 +0.06em `tx3`；可排序的表頭整格是按鈕，箭頭用粉色（這是系統標記，不是選取）。
+- 儲存格 12px、下緣 1px `line`。hover 底色升一階；選取列是 `row-selected`（帶粉的暗紅），完成／失敗／草稿列各有自己的中性偏色底。
+- **鎖住的列**（狀態查不到或還沒查）：`tr.locked` 文字整列退到 `tx3`、勾選框 disabled 並帶 title 說明原因——看得見、讀得到、但選不動。
+
+### Named Rules
+
+**The Visible-But-Locked Rule.** 不能被選的列不藏起來也不變灰到讀不出來：整列退一階、勾選框鎖上、並且說得出為什麼。使用者要能看見自己沒被納入的那一批是誰。
+
+**The Restyle-Native Rule.** 開關、播放頭、勾選框都是原生表單元素換一張臉。不做自訂的假控制項，鍵盤與輔助技術的行為必須原封不動。
+
+**The Reason-Beside-The-Button Rule.** 主按鈕變灰時，旁邊必定有一句 12px 的原因。沒有原因就不該讓按鈕變灰。
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** 把這裡的 token 視為與兩個前身共用的同一組值：合併後 `src/ui/styles.css` 是唯一一份，改了就是改全部四個分頁。
-- **Do** 用 4px 圓角、1px `line` 與底色分層做出區塊，讓新畫面自然落在同一張工作檯上。
-- **Do** 讓每個分頁都有「頂列／內容／底部作業列」的三段結構，作業列永遠寫著批次數字。
-- **Do** 在主要動作變灰時補一行 `.why`，並照三種既有寫法（沒選、沒事可做、另一個任務在跑）挑一種。
-- **Do** 讓破壞性動作就地在作業列二次確認：紅句子＋紅按鈕＋quiet 取消。
-- **Do** 讓不能操作的列留在畫面上並鎖住（文字退 `tx3`、checkbox 停用帶 `title`、狀態格鎖頭＋文字），而不是把它藏起來。
-- **Do** 讓所有可比較的數字走 tabular-nums，天數、mid、時間、bvid、端點名走等寬字。
-- **Do** 把狀態表達成「色點／圖示＋文字」，並在 `title` 裡補上原因。
-- **Do** 新圖示照 16px 網格、1.5 描邊畫成 SVG，並繼承文字色。
-- **Do** 在窄視窗只讓密表堆疊；其他表格橫向捲。
+
+- **Do** 讓粉色（#ff5c8d）只出現在現在、選取、主要動作、焦點、已播這五種位置上。
+- **Do** 用彈幕色板表達狀態，並且永遠配上文字：黃＝超過門檻／AI 草稿，綠＝進行中／完成，紅＝失敗，淡藍＝從未投稿／中性告知。
+- **Do** 用 1px `line` 與四階中性面分層；容器是「切出來的段」，不是浮起來的卡片。
+- **Do** 把每一頁做成「48px 頂列／內容／64px 控制列」，內容各自捲動。
+- **Do** 在控制列上放這一批＋執行它的按鈕，按鈕變灰時寫出原因。
+- **Do** 讓時間碼、計數、天數、mid、端點名、預設值走 Spline Sans Mono 並開 tabular-nums。
+- **Do** 用 4px 圓角給控制項、正圓給旋鈕與時間點標記、2px 圓端給軌。
+- **Do** 用 `icons.tsx` 裡畫好的 SVG 圖示。
+- **Do** 讓不能選的列留在畫面上、鎖住勾選框、並說明原因。
 
 ### Don't:
-- **Don't** 用陰影或浮起卡片製造層次；`box-shadow` 只有焦點環一個用途，連對話框都不投影。
-- **Don't** 讓粉色離開「選取」與「主要動作」，也不要引入第二支重點色。
-- **Don't** 用 emoji、符號字元或圖示字型代替 SVG 圖示。
-- **Don't** 用對話框做確認——`.dlg` 只做檢視，確認發生在它被觸發的那條帶子上。
-- **Don't** 加首頁／儀表板／總覽頁；四個分頁是平輩，入口就是分頁本身。
-- **Don't** 讓顏色成為唯一訊號（超標的天數是琥珀色，但旁邊永遠有數字與單位）。
-- **Don't** 加淺色主題或任何 `prefers-color-scheme` 分支；這個世界只有深色。
-- **Don't** 引入遠端字型或字型檔；擴充功能不連外抓資源。
-- **Don't** 讓表格或頂列的 min-content 撐寬視窗。
-- **Don't** 在同一頁上用相同外觀表示「勾選」與「設定開關」。
-- **Don't** 把 `.lbl` 當成標題上方的引言小字；它只標區段。
-- **Don't** 讓設定側欄的摘要換行（永遠一行，超出用省略號）。
+
+- **Don't** 加任何 `box-shadow`、光暈或投影——這個世界不發光，焦點是實色邊框或 outline。
+- **Don't** 畫裝飾性漸層；漸層只留給捲動邊界的淡出遮罩與代表「沒有資料」的虛線軌。
+- **Don't** 用粉色表達狀態，也不要用狀態色標示選取。
+- **Don't** 讓顏色單獨傳訊；每個狀態都要有文字或圖示。
+- **Don't** 用小於 12px 的字；要更弱就降色不降字級。
+- **Don't** 用 emoji 或符號字元當圖示。
+- **Don't** 為破壞性動作開 modal；在控制列內二次確認。
+- **Don't** 讓表格或頂列把版面撐得比視窗寬（內容欄一律 `minmax(0, 1fr)`）。
+- **Don't** 加淺色主題或 `prefers-color-scheme` 分支；App 分頁只有深色一套（淺色只屬於長在 B 站頁面上的影片頁卡片）。
+- **Don't** 為了「這一頁比較特別」而改動控制列的意思或三段版面的存在。

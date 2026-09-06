@@ -108,6 +108,7 @@ export function FollowRunningView() {
             { label: m.follows.running.couldNotCheck, value: unknown, dimWhenZero: true },
           ]}
           skeleton="avatar"
+          cached={job.stats.cached}
         />
       </div>
       <ProgressBar

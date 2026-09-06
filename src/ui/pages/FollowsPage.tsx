@@ -208,6 +208,7 @@ export function FollowsPage({ nav }: { nav: NavData }) {
               onToggle={job.toggle}
               tagNameOf={tagNameOf}
               thresholdDays={threshold}
+              onThreshold={setThreshold}
               now={now}
               sort={sort}
               onSort={setSort}
@@ -308,6 +309,7 @@ export function FollowsPage({ nav }: { nav: NavData }) {
             </button>
           )}
           <span className="read-inline">
+            <span className="mono">{m.follows.runbar.readout(shown.length, job.rows.length, n)}</span>
             <button type="button" className="btn quiet" onClick={() => setShowSetup(true)}>
               {m.follows.runbar.rerun}
             </button>

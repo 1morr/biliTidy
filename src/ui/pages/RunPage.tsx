@@ -137,6 +137,7 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
               { label: m.progressPanel.couldNotFetch, value: job.stats.detailFailed, dimWhenZero: true },
             ]}
             skeleton="cover"
+            cached={job.stats.cached}
           />
         </div>
         <ProgressBar phaseLabel={phaseLabel} progress={job.progress} startedAt={job.startedAt} now={now} onCancel={job.cancel} />
@@ -371,7 +372,7 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
                       {sourceDesc || m.run.noDescriptionAiOnlyName}
                     </span>
                     {sourceDescFromBili && (
-                      <span className="tag pink" style={{ marginLeft: 8 }}>
+                      <span className="tag info" style={{ marginLeft: 8 }}>
                         {m.run.fromBilibiliDescription}
                       </span>
                     )}

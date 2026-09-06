@@ -139,6 +139,8 @@ export const zhHant: Messages = {
     reviewTableAppearsHere: '這一輪跑完會出現在這裡',
     estRemainingShort: (clock: string) => `預估還要 ${clock}`,
     cancelThisRun: '取消這次任務',
+    legendFetched: '剛查的',
+    legendCached: '來自快取',
   },
 
   reviewRail: {
@@ -440,33 +442,69 @@ export const zhHant: Messages = {
   },
 
   settings: {
-    sectionTitles: {
-      connection: { title: '連線', desc: '任何 OpenAI 相容端點都可以；金鑰只存在這台電腦，只會送到你填的這個網域。' },
-      data: {
-        title: '要給 AI 看什麼',
-        desc: '三個資料來源，開得越多判斷越準、請求也越多。右邊的成本以 100 支影片、完全沒有快取為基準即時反映。',
+    groups: {
+      organise: '整理收藏 · 需要 AI',
+      shared: '兩個工具共用',
+      follows: '清理關注 · 不用 AI',
+    },
+    sections: {
+      endpoint: {
+        title: 'AI 端點',
+        desc: '任何 OpenAI 相容的端點都接得上。沒填的話，整理收藏那一頁的「開始分類」會變灰並寫出原因；清理關注不讀這一章。',
+      },
+      sources: {
+        title: '給 AI 看什麼',
+        desc: '三個資料來源——開得越多判斷越準、請求也越多。右邊的成本以 100 支影片、完全沒有快取為基準，改任何一項就跟著變。',
       },
       instructions: {
-        title: '要 AI 怎麼判斷',
+        title: '分類指示',
         desc: '分類規則內建好了，這裡只放「只有你知道的習慣」。要改某個收藏夾收什麼，到「收藏夾」分頁寫它的描述更有效。',
       },
-      speed: { title: '速度與資料', desc: '限速、快取與備份。遇到風控會自動退避重試，仍失敗則停下並保留進度。' },
+      speed: {
+        title: '讀寫速度',
+        desc: '對 B 站送請求的快慢。兩個工具共用（它們不會同時跑）。遇到風控會自動退避重試，仍失敗則停下並保留進度。',
+      },
+      data: {
+        title: '快取與備份',
+        desc: '這個擴充功能在兩次任務之間記住了什麼，以及怎麼帶走。清掉快取只會讓下次重抓，收藏夾與關注都不會動。',
+      },
+      language: {
+        title: '語言',
+        desc: '介面、影片頁按鈕與進度文字的語言，改了立刻生效。送給 AI 的內容一律維持中文——那是功能性的輸入，不是介面。',
+      },
     },
+    scope: {
+      usedBy: '用在',
+      notUsedBy: '不用在',
+      organise: '整理收藏',
+      descriptions: '收藏夾描述',
+      quickFav: '影片頁 智慧收藏',
+      follows: '清理關注',
+    },
+    followsPointer: {
+      title: (days: number) => `門檻 ${days} 天 · 含悄悄關注`,
+      desc: '兩個都在「關注」分頁上改，改了就是改設定。',
+    },
+    required: '必填',
+    defaultLabel: '預設',
+    languageLabel: '介面語言',
     nav: {
       connected: '已連線',
       visionVerified: '視覺已驗證',
       noEndpointOrModel: '尚未填端點或模型',
       tags: { detail: '詳情', subtitle: '字幕', cover: '封面' },
-      perBatch: (n: number) => `每批 ${n} 支`,
+      perBatch: (n: number) => `每批 ${n}`,
       customInstructions: (n: number) => `已寫 ${n} 字的自訂指示`,
       noCustomInstructions: '沒有自訂指示',
+      speed: (preset: string, rps: number, ms: number) => `${preset} · ${rps} req/s · ${ms} ms`,
       cache: (n: number) => `${n} 筆詳情`,
       activityCache: (n: number) => `${n} 個帳號`,
     },
     keyStoredLocally: '金鑰只存在這台電腦的',
     keyStoredLocallyAfter: '，只會送到你填的那個端點。',
     save: '儲存設定',
-    unsavedChanges: '有未儲存的變更。',
+    saveN: (n: number) => `儲存 ${n} 項變更`,
+    unsavedIn: (sections: string) => `改過還沒存：${sections}。`,
     nothingToSave: '沒有未儲存的變更——改任何一個欄位，按鈕就會亮起來。',
     saved: '已儲存。',
     unauthorizedEndpoint: '未授權存取該端點，AI 功能無法使用；請重新儲存並允許權限。',
@@ -477,11 +515,41 @@ export const zhHant: Messages = {
     promptDialogAriaLabel: '會送給 AI 什麼',
     whatGetsSentToAi: '會送給 AI 什麼',
     close: '關閉',
-    language: '語言',
+    chapterReadout: (i: number, total: number, changed: number) =>
+      `${String(i).padStart(2, '0')} / ${String(total).padStart(2, '0')} · ${changed} 項改過`,
+    chapterAria: (no: string, title: string) => `前往 ${no} ${title}`,
   },
 
   connection: {
-    urlHint: (endpoint: string) => `會呼叫 ${endpoint}/chat/completions，多數服務要以`,
+    baseUrl: {
+      label: 'Base URL',
+      desc: '端點的根網址。會呼叫 {Base URL}/chat/completions，多數服務要以 /v1 結尾；本機模型可以填 http://localhost。',
+      default: 'https://api.openai.com/v1',
+    },
+    apiKey: {
+      label: 'API Key',
+      desc: '端點發給你的金鑰。只存在這台電腦，不會進備份檔，也不會送到 B 站。',
+    },
+    model: {
+      label: 'Model',
+      desc: '模型名稱，照端點文件的寫法。分類影片與生成收藏夾描述都用同一個。',
+      default: 'gpt-4o-mini',
+    },
+    test: {
+      label: '測試連線',
+      desc: '送一句短提示過去，把回覆秀出來。第一次會跳出 Chrome 的權限視窗——只申請你填的那個網域。',
+    },
+    vision: {
+      label: '這個模型看得懂圖片',
+      desc: '開了之後要按「測試視覺」：送一張圖過去，你確認它描述得對才算通過。通過了，02「給 AI 看什麼」裡的「附上封面」才會生效。換模型或網址要重測。',
+      default: '關',
+      stateOff: '關 · 純文字分類',
+      stateOn: '開',
+    },
+    compat: {
+      label: '端點相容性',
+      desc: 'Temperature 與額外請求參數（JSON）。多數人不用改；DeepSeek 要關思考模式時才需要在這裡填一行。',
+    },
     apiKeyHide: '隱藏',
     apiKeyShow: '顯示',
     testing: '測試中…',
@@ -492,17 +560,14 @@ export const zhHant: Messages = {
     modelReply: (text: string) => `模型回覆：${text}`,
     modelReplyReasoningOnly: (text: string) => `模型回覆（只有思考內容）：${text}`,
     noReplyContent: '模型沒有回覆內容',
-    modelUnderstandsImages: '這個模型看得懂圖片',
     verified: '已驗證',
-    testVisionHint: '通過測試後才能在下面選「封面附圖」。換模型或 Base URL 要重測。',
     testingVision: '測試中…',
     testVision: '測試視覺',
-    doesItMatchQuestion: '圖片是「粉色圓底＋白色資料夾」，描述對得上嗎？',
+    doesItMatchQuestion: '圖片是「深色圓角方塊、白色勾號、下面一條帶圓形播放頭的粉色進度條」，描述對得上嗎？',
     matchesEnable: '對得上，啟用',
     visionEnabled: '已啟用視覺模式。',
     doesntMatch: '對不上',
     visionDisabled: '描述對不上，視覺模式維持關閉。',
-    endpointCompatibility: '端點相容性（Temperature、額外請求參數）',
     temperature: 'Temperature',
     temperatureNotSent: '不送出',
     temperatureHint: '留空＝不送這個參數（推理模型多半只接受預設值）。設 0 也不會讓結果穩定：同一份 prompt 重跑約 20% 會變。',
@@ -520,24 +585,28 @@ export const zhHant: Messages = {
         badge: '推薦',
         desc: (ttlDays: number) =>
           `標籤、合集名稱與同合集標題、分區、動態、分 P 標題、合作者。標籤是準確度最大的來源，沒它就只能靠標題猜。抓過的結果快取 ${ttlDays} 天。`,
+        default: '開',
         unit: '次請求',
       },
       subtitle: {
         name: '抓字幕',
         descOn: '人工字幕優先，沒有才用 AI 字幕；每支多兩次請求、多等 1–2 秒。標題與標籤都很含糊的收藏夾才值得開。',
         descOff: '字幕是跟著「影片詳情」一起抓的；詳情關掉時字幕也不會抓。',
+        default: '關',
         unit: '次請求',
       },
       cover: {
         name: '附上封面給模型看',
-        badgeNeedsTest: '需先通過「測試視覺」',
+        badgeNeedsTest: '要先在 01 通過「測試視覺」',
         desc: '每支多下載一張 320×200 縮圖，並改走視覺批次（一次送的支數少很多，AI 呼叫跟著變多）。實測分不出穩定差異——先把收藏夾描述寫好，效果大得多。',
+        default: '開，但要通過視覺測試才生效',
         unit: '張縮圖',
       },
     },
     perBatch: '每批送幾支',
     perBatchHintCover: '帶圖的批次要小一點，越多張越容易張冠李戴，建議 8–12。',
     perBatchHintText: '純文字一次可以多送一些，建議 20–40；改成附圖後會自動換成視覺批次的數值。',
+    perBatchDefault: '純文字 30 · 附圖 10',
     whatGetsSent: '這份設定會送出什麼',
     userMessageStart: '使用者訊息的開頭。',
     expandFull: '展開全文',
@@ -559,35 +628,47 @@ export const zhHant: Messages = {
   },
 
   speedData: {
+    preset: { label: '速度', default: '2 req/s · 800 ms（「預設」那一組）' },
     ratePresets: {
       safe: { label: '保守', note: '曾被風控、或收藏夾很大時用；時間大約加倍' },
       normal: { label: '預設', note: '實測穩定的速度，沒特別理由就用這個' },
       fast: { label: '快', note: '明顯增加風控機率（-412／-799），只適合少量影片' },
     },
     custom: '自訂',
-    customNote: '目前的數值不對應任何一組，改用下面的「進階」調整',
-    readWriteSpeed: '讀取與寫入速度',
+    customNote: '目前的數值不對應任何一組，用下面的欄位自己調',
     rateHint:
-      '整理收藏與清理關注共用（兩者不會同時跑）。遇到 -412 / -799 / HTTP 412 會自動暫停 60→120→240 秒重試，仍失敗則停止並保留進度。查關注是每個帳號一個請求，關注幾千個的話選「保守」比較安全。',
-    advanced: '自己填數值',
+      '遇到 -412 / -799 / HTTP 412 會自動暫停 60→120→240 秒重試，仍失敗則停止並保留進度。查關注是每個帳號一個請求，關注幾千個的話選「保守」比較安全。',
+    manual: {
+      label: '自己填數值',
+      desc: '三組預設背後就是這三個數字。改了其中一個，上面的預設會顯示「自訂」。',
+    },
     readRate: '讀取速率（req/s）',
     readRateHint: '實際間隔另有 ±30% 抖動。',
     writeInterval: '寫入間隔（ms）',
     writeIntervalHint: '兩次寫入之間的最小間隔——搬移、取關、重新關注都算。',
     perMoveBatch: '每次搬移筆數',
     perMoveBatchHint: '遇到 -632（數量限制）會自動對半拆。',
-    cache: '快取',
+    videoCache: {
+      label: '影片快取',
+      desc: (detailTtlDays: number) =>
+        `影片詳情留 ${detailTtlDays} 天、封面縮圖留 7 天。整理收藏會重用它們，同一個收藏夾再跑一次幾乎不花請求。`,
+    },
+    activityCache: {
+      label: '帳號活躍度快取',
+      desc: (activityTtlDays: number) =>
+        `每個帳號的最新投稿留 ${activityTtlDays} 天；查不到的帳號永遠會重查。清理關注只會向 B 站問這裡沒有的帳號。`,
+    },
     calculating: '計算中…',
     cacheSummary: (details: number, covers: number) => `影片詳情 ${details} 筆、封面 ${covers} 張`,
     activityCacheSummary: (n: number, oldest: string) => `已查 ${n} 個帳號，最早的結果是 ${oldest}`,
     activityCacheEmpty: '還沒查過任何帳號',
     clear: '清除',
-    cacheHint: (detailTtlDays: number, activityTtlDays: number) =>
-      `詳情快取 ${detailTtlDays} 天、封面 7 天、帳號最新投稿 ${activityTtlDays} 天（查不到的帳號永遠會重查）；清掉只會讓下次重抓，不影響收藏夾與關注。`,
-    backup: '備份',
+    backup: {
+      label: '備份',
+      desc: '收藏夾描述是這裡最難重建的東西（每個夾都要寫或生成一次）。匯出檔不含 API Key，但含關注的門檻與「包含悄悄關注」。',
+    },
     exportDescriptionsAndSettings: '匯出描述與設定',
     import: '匯入',
-    backupHint: '收藏夾描述是這裡最難重建的東西（每個夾都要寫或生成一次）。匯出檔不含 API Key。',
   },
 
   quickFav: {
@@ -849,6 +930,12 @@ export const zhHant: Messages = {
       notChecked: '還沒查',
       daysTitle: (days) => `距最新一支投稿 ${num(days)} 天`,
       daysShort: (days) => `安靜 ${num(days)} 天`,
+      laneHeader: '安靜期',
+      thresholdCap: (days) => `${num(days)} 天`,
+      playheadLabel: '不活躍門檻——拖動可調整',
+      today: '今天',
+      noVideosCell: '從未',
+      state: { quiet: '安靜', uploading: '還在更新', noVideos: '沒有影片' },
       cannotSelectUnchecked: '還沒查——不能勾選',
       cannotSelectUnknown: '狀態未確認——不能勾選',
       status: {
@@ -890,6 +977,7 @@ export const zhHant: Messages = {
       retryFailed: (count) => `重試 ${num(count)} 個失敗的`,
       rerun: '再查一次',
       clearResults: '清除結果',
+      readout: (shown: number, total: number, ticked: number) => `顯示 ${num(shown)} / ${num(total)} · 勾了 ${num(ticked)}`,
     },
 
     errors: {

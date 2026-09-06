@@ -430,6 +430,15 @@ await page.waitForSelector('text=Review and unfollow', { timeout: 90000 });
 await page.waitForTimeout(400);
 await shot('follows-review');
 copyFileSync(path.join(out, 'follows-review.png'), path.join(review, 'follows-desktop.png'));
+// 時間軸欄：每一列一段播放頭、表頭一個可拖的圓鈕；拖到別的位置門檻要跟著變
+console.log('timeline playhead cells:', await page.locator('td.col-lane .ph').count());
+const playhead = page.locator('input.playhead');
+const spanDays = Number(await playhead.getAttribute('max'));
+await playhead.fill(String(spanDays - 500));
+await page.waitForTimeout(400);
+console.log('threshold after dragging the playhead:', await page.locator('#threshold').inputValue());
+await page.getByRole('button', { name: '365', exact: true }).click();
+await page.waitForTimeout(400);
 await phone('follows-review-mobile', 'table.grid');
 copyFileSync(path.join(out, 'follows-review-mobile.png'), path.join(review, 'mobile.png'));
 
@@ -489,19 +498,34 @@ await shot('follows-unknown');
 await phone('follows-unknown-mobile', 'table.grid');
 await page.locator('.facet', { hasText: 'Quiet past the threshold' }).click();
 
-// ══ 設定：一次只看一段，三段各截一張 ══════════════════════════════════════
+// ══ 設定：六章分三組、一次只看一章；01 帶著兩個改過沒存的欄位，控制列的章節軌要亮起來 ══════════
 await tab('Settings');
-for (const s of await page.locator('details.details > summary').all()) await s.click();
+await page.getByLabel('Model', { exact: true }).fill('mock-model-2');
 await page.waitForTimeout(200);
+console.log('settings save button:', await page.getByRole('button', { name: /^Save/ }).textContent());
+console.log('dirty chapter segments:', await page.locator('.runbar .seg.dirty').count());
 await shot('settings', { fullPage: true });
-await page.getByRole('button', { name: /^What the AI sees/ }).click();
+copyFileSync(path.join(out, 'settings.png'), path.join(review, 'settings-desktop.png'));
+await phone('settings-mobile');
+await page.getByLabel('Model', { exact: true }).fill('mock-model');
+// 章節在左軌（.chap）與控制列的章節軌（.seg）各有一顆按鈕；點左軌的
+const chapter = (title) => page.locator('button.chap', { hasText: title }).click();
+await chapter('What the AI sees');
 await page.waitForTimeout(200);
 await shot('settings-data', { fullPage: true });
-await page.getByRole('button', { name: /^Speed & data/ }).click();
-for (const s of await page.locator('details.details > summary').all()) await s.click();
+await chapter('Read & write speed');
 await page.waitForTimeout(200);
 await shot('settings-speed', { fullPage: true });
-copyFileSync(path.join(out, 'settings-speed.png'), path.join(review, 'settings-desktop.png'));
+await chapter('Cache & backup');
+await page.waitForTimeout(200);
+await shot('settings-cache', { fullPage: true });
+// 左軌最後一列是通往關注頁的門
+await page.locator('button.chap.link').click();
+await page.waitForSelector('text=Review and unfollow', { timeout: 10000 });
+console.log('follows pointer opens the Follows page: true');
+await tab('Settings');
+await chapter('Language');
+await page.waitForTimeout(200);
 
 // ══ 繁體中文：切語言 → 關注頁（結果從快照還原）→ 整理頁 ═══════════════════
 await page.getByLabel('繁體中文').check();

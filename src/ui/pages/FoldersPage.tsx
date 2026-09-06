@@ -301,7 +301,7 @@ export function FoldersPage({ mid }: { mid: number }) {
                   <span className="dot" style={{ background: 'var(--warn)' }} />
                   <span>{m.folders.draftsPending(draftIds.length)}</span>
                   <span className="row tight spacer">
-                    <button type="button" className="btn warn small" disabled={busy} onClick={() => void adoptDrafts()}>
+                    <button type="button" className="btn small" disabled={busy} onClick={() => void adoptDrafts()}>
                       {m.folders.acceptAll}
                     </button>
                     <button type="button" className="btn small" disabled={busy} onClick={() => setDrafts({})}>
@@ -372,7 +372,7 @@ export function FoldersPage({ mid }: { mid: number }) {
                               <button type="button" className="link" disabled={busy || !aiReady} onClick={() => void generate(f)}>
                                 {now ? m.folders.generating : m.folders.generateWithAi}
                               </button>
-                              {usesBiliIntro(f) && <span className="tag pink">{m.folders.usesBiliIntroTag}</span>}
+                              {usesBiliIntro(f) && <span className="tag info">{m.folders.usesBiliIntroTag}</span>}
                             </div>
                           </>
                         ) : (
@@ -392,7 +392,7 @@ export function FoldersPage({ mid }: { mid: number }) {
                               <span className="mono">{m.folders.charCount(draft.length)}</span>
                               <button
                                 type="button"
-                                className="btn warn small"
+                                className="btn small"
                                 disabled={busy}
                                 onClick={() => {
                                   void setDescription(f.id, draft);

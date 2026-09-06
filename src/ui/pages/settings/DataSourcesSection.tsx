@@ -51,6 +51,7 @@ export function DataSourcesSection({
       cost: `+${REFERENCE_VIDEOS}`,
       unit: m.dataSources.sources.detail.unit,
       desc: m.dataSources.sources.detail.desc(DETAIL_TTL_DAYS),
+      def: m.dataSources.sources.detail.default,
       onChange: (fetchDetail: boolean) => setFeat({ fetchDetail }),
     },
     {
@@ -61,6 +62,7 @@ export function DataSourcesSection({
       cost: draft.features.fetchSubtitle && draft.features.fetchDetail ? `+${REFERENCE_VIDEOS * 2}` : '+0',
       unit: m.dataSources.sources.subtitle.unit,
       desc: draft.features.fetchDetail ? m.dataSources.sources.subtitle.descOn : m.dataSources.sources.subtitle.descOff,
+      def: m.dataSources.sources.subtitle.default,
       onChange: (fetchSubtitle: boolean) => setFeat({ fetchSubtitle }),
     },
     {
@@ -72,6 +74,7 @@ export function DataSourcesSection({
       cost: `+${estimate.cdnRequests}`,
       unit: m.dataSources.sources.cover.unit,
       desc: m.dataSources.sources.cover.desc,
+      def: m.dataSources.sources.cover.default,
       onChange: (attachCover: boolean) => setAi({ attachCover }),
     },
   ];
@@ -97,6 +100,9 @@ export function DataSourcesSection({
                 )}
               </span>
               <span className="srow-desc">{s.desc}</span>
+              <span className="srow-def">
+                {m.settings.defaultLabel} <b>{s.def}</b>
+              </span>
             </span>
             <span className="srow-cost">
               <b className={s.cost === '+0' ? 'mono dim' : 'mono'}>{s.cost}</b>
@@ -105,23 +111,30 @@ export function DataSourcesSection({
           </div>
         ))}
 
-        <div className="row" style={{ padding: '14px 0', borderTop: '1px solid var(--line)' }}>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{m.dataSources.perBatch}</span>
-          <input
-            type="number"
-            aria-label={m.dataSources.perBatch}
-            min={1}
-            max={coverActive ? 30 : 100}
-            style={{ width: 80, height: 28 }}
-            value={coverActive ? (ai.batchSizeVision ?? batchSize) : (ai.batchSizeText ?? batchSize)}
-            onChange={(e) => {
-              const n = Math.max(1, Number(e.target.value) || 1);
-              if (coverActive) setAi({ batchSizeVision: n });
-              else setAi({ batchSizeText: n });
-            }}
-          />
-          <span className="why" style={{ flex: 1 }}>
-            {coverActive ? m.dataSources.perBatchHintCover : m.dataSources.perBatchHintText}
+        <div className="srow" style={{ borderTop: '1px solid var(--line)' }}>
+          <span className="srow-main">
+            <span className="srow-name">
+              <label htmlFor="batchSize">{m.dataSources.perBatch}</label>
+            </span>
+            <span className="srow-desc">{coverActive ? m.dataSources.perBatchHintCover : m.dataSources.perBatchHintText}</span>
+            <span className="srow-def">
+              {m.settings.defaultLabel} <b>{m.dataSources.perBatchDefault}</b>
+            </span>
+          </span>
+          <span className="srow-cost">
+            <input
+              id="batchSize"
+              type="number"
+              min={1}
+              max={coverActive ? 30 : 100}
+              style={{ width: 84 }}
+              value={coverActive ? (ai.batchSizeVision ?? batchSize) : (ai.batchSizeText ?? batchSize)}
+              onChange={(e) => {
+                const n = Math.max(1, Number(e.target.value) || 1);
+                if (coverActive) setAi({ batchSizeVision: n });
+                else setAi({ batchSizeText: n });
+              }}
+            />
           </span>
         </div>
 

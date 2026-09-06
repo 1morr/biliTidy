@@ -1,6 +1,50 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useMessages } from '../hooks/useI18n';
 
 /** 設定頁與其他分頁共用的表單零件。排版刻意一致，混在同一頁時看起來是同一種控制項。 */
+
+/**
+ * 設定列：左邊是「這是什麼、做什麼、預設是什麼」，右邊是控制項。說明永遠在畫面上，不藏進 tooltip。
+ * `dirty` 是「改過還沒存」——欄位邊框轉粉，與控制列上亮起的章節段是同一個訊號。
+ */
+export function SettingRow({
+  id,
+  label,
+  required = false,
+  desc,
+  def,
+  dirty = false,
+  children,
+}: {
+  /** 有 id 時標籤是 <label for>，點標籤會聚焦控制項 */
+  id?: string;
+  label: string;
+  required?: boolean;
+  desc?: ReactNode;
+  /** 預設值（照原樣顯示，等寬） */
+  def?: string;
+  dirty?: boolean;
+  children: ReactNode;
+}) {
+  const m = useMessages();
+  return (
+    <div className={dirty ? 'frow dirty' : 'frow'}>
+      <div>
+        <div className="fk">
+          {id ? <label htmlFor={id}>{label}</label> : <span>{label}</span>}
+          {required && <span className="req">{m.settings.required}</span>}
+        </div>
+        {desc && <div className="fd">{desc}</div>}
+        {def && (
+          <div className="fdef">
+            {m.settings.defaultLabel} <b>{def}</b>
+          </div>
+        )}
+      </div>
+      <div className="fc">{children}</div>
+    </div>
+  );
+}
 
 /** 測試按鈕的四種狀態；confirm = 回來了但要使用者確認描述對得上那張圖才算通過 */
 export type TestState =

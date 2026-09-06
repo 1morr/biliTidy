@@ -39,6 +39,7 @@ export function ProgressPanel({
   background,
   readings,
   skeleton,
+  cached = 0,
 }: {
   phaseLabel: string;
   progress: Progress | null;
@@ -48,11 +49,14 @@ export function ProgressPanel({
   background: boolean;
   readings: GaugeReading[];
   skeleton: 'cover' | 'avatar';
+  /** 這一輪直接用快取答掉的筆數：進度軌上畫成「已緩衝」的灰段，真的打了請求的才是粉色 */
+  cached?: number;
 }) {
   const m = useMessages();
   const log = useActivity();
   const { elapsedSec, done, total, rate, remainSec } = rateOf(progress, startedAt, now);
   const ratio = total > 0 ? done / total : 0;
+  const fetchedRatio = total > 0 ? Math.max(0, done - cached) / total : 0;
 
   return (
     <main className="center">
@@ -67,8 +71,21 @@ export function ProgressPanel({
           )}
         </div>
         <div className="progress">
-          <div style={{ transform: `scaleX(${ratio})` }} />
+          <div className="buf" style={{ transform: `scaleX(${ratio})` }} />
+          <div style={{ transform: `scaleX(${fetchedRatio})` }} />
         </div>
+        {cached > 0 && total > 0 && (
+          <div className="gauge-legend">
+            <span>
+              <i style={{ background: 'var(--ac)' }} />
+              {m.progressPanel.legendFetched}
+            </span>
+            <span>
+              <i style={{ background: 'var(--buffered)' }} />
+              {m.progressPanel.legendCached}
+            </span>
+          </div>
+        )}
         <div className="gauge-read">
           <span className="gauge-item">
             <span>{m.progressPanel.used}</span>

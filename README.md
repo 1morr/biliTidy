@@ -45,9 +45,11 @@ four pages: **Organise**, **Folders**, **Follows**, **Settings**.
 
 ### Sort favourites into folders
 
-1. **Settings → Connection** — fill in Base URL, API Key and Model of any
+1. **Settings → 01 AI endpoint** — fill in Base URL, API Key and Model of any
    OpenAI-compatible endpoint, press "Test connection". Saving asks for
-   permission to that one origin.
+   permission to that one origin. (Settings are grouped by who uses them:
+   chapters 01–03 only matter for organising favourites, 04–06 are shared;
+   the follow clean-up never needs an AI endpoint.)
 2. **Folders** — write one sentence per folder describing what belongs in it.
    Type it, import the folder's Bilibili description, or have the AI summarise
    what is already inside; both start as drafts you have to accept.
@@ -70,10 +72,11 @@ four pages: **Organise**, **Folders**, **Follows**, **Settings**.
    and check**. One request per account at the read rate in Settings; a couple
    of thousand follows is half an hour at the default 2 req/s. Results are
    cached for 30 days, so the next run only asks about new accounts.
-2. On the review table set the threshold (180 / 365 / 730 days, or type one),
-   filter by group or kind of follow, tick the rows, press **Unfollow N
-   accounts** and confirm. **Undo** follows them again and puts them back in
-   their groups.
+2. On the review table set the threshold (180 / 365 / 730 days, type one, or
+   drag the playhead on the timeline column — every row draws the account's
+   silence from its latest upload to today), filter by group or kind of
+   follow, tick the rows, press **Unfollow N accounts** and confirm. **Undo**
+   follows them again and puts them back in their groups.
 
 ## How it behaves
 

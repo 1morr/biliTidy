@@ -155,6 +155,8 @@ export const en = {
     reviewTableAppearsHere: 'Appears here when this run is done',
     estRemainingShort: (clock: string) => `Est. ${clock} left`,
     cancelThisRun: 'Cancel this run',
+    legendFetched: 'fetched now',
+    legendCached: 'from cache',
   },
 
   // ---- src/ui/pages/run/ReviewRail.tsx ----
@@ -501,39 +503,69 @@ export const en = {
 
   // ---- Settings page (src/ui/pages/settings/*) ----
   settings: {
-    sectionTitles: {
-      connection: {
-        title: 'Connection',
-        desc: 'Any OpenAI-compatible endpoint works; the key is only stored on this computer and only ever sent to the domain you enter.',
+    groups: {
+      organise: 'Organise favourites · needs AI',
+      shared: 'Shared by both tools',
+      follows: 'Follow clean-up · no AI',
+    },
+    sections: {
+      endpoint: {
+        title: 'AI endpoint',
+        desc: 'Any OpenAI-compatible endpoint works. Left empty, the Organise page’s "Start classification" greys out and says why; the follow clean-up never reads this chapter.',
       },
-      data: {
+      sources: {
         title: 'What the AI sees',
-        desc: 'Three data sources — the more you enable, the more accurate (and the more requests). The cost on the right updates live, based on 100 videos with no cache.',
+        desc: 'Three data sources — the more you enable, the more accurate the classification and the more requests it takes. The cost on the right is for 100 videos with no cache and updates as you change things.',
       },
       instructions: {
-        title: 'How the AI should decide',
-        desc: 'The classification rules are built in — this is only for habits only you know about. To change what a specific folder collects, edit its description on the Folders page instead.',
+        title: 'Classification instructions',
+        desc: 'The classification rules are built in — this is only for habits only you know about. To change what one folder collects, edit its description on the Folders page instead.',
       },
       speed: {
-        title: 'Speed & data',
-        desc: 'Rate limits, cache and backups. Rate limiting triggers an automatic backoff and retry; if it still fails, the run stops and keeps its progress.',
+        title: 'Read & write speed',
+        desc: 'How fast requests go out to Bilibili. Shared by both tools (they never run at the same time). Rate limiting triggers an automatic back-off; if it still fails, the run stops and keeps its progress.',
+      },
+      data: {
+        title: 'Cache & backup',
+        desc: 'What this extension remembers between runs, and how to take it with you. Clearing a cache only means the next run fetches again; your folders and follows are untouched.',
+      },
+      language: {
+        title: 'Language',
+        desc: 'The language of this interface, the video-page button and progress messages. Applies at once. What gets sent to the AI stays in Chinese either way — that is a functional input, not UI.',
       },
     },
+    scope: {
+      usedBy: 'Used by',
+      notUsedBy: 'not used by',
+      organise: 'Organise',
+      descriptions: 'Folder descriptions',
+      quickFav: 'Smart favourite (video page)',
+      follows: 'Follow clean-up',
+    },
+    followsPointer: {
+      title: (days: number) => `Threshold ${days} days · quiet follows`,
+      desc: 'Both live on the Follows page — changing them there is changing the setting.',
+    },
+    required: 'required',
+    defaultLabel: 'Default',
+    languageLabel: 'Interface language',
     nav: {
       connected: 'Connected',
       visionVerified: 'Vision verified',
       noEndpointOrModel: 'No endpoint or model set',
       tags: { detail: 'Detail', subtitle: 'Subtitle', cover: 'Cover' },
-      perBatch: (n: number) => `${n} per batch`,
+      perBatch: (n: number) => `${n}/batch`,
       customInstructions: (n: number) => `${n}-character custom instructions`,
       noCustomInstructions: 'No custom instructions',
+      speed: (preset: string, rps: number, ms: number) => `${preset} · ${rps} req/s · ${ms} ms`,
       cache: (n: number) => `${n} ${n === 1 ? 'detail' : 'details'}`,
       activityCache: (n: number) => `${n} ${n === 1 ? 'account' : 'accounts'}`,
     },
     keyStoredLocally: 'The key is only stored on this computer, in',
     keyStoredLocallyAfter: ', and only ever sent to the endpoint you enter.',
     save: 'Save settings',
-    unsavedChanges: 'You have unsaved changes.',
+    saveN: (n: number) => `Save ${n} change${n === 1 ? '' : 's'}`,
+    unsavedIn: (sections: string) => `Changed and not saved yet: ${sections}.`,
     nothingToSave: 'No unsaved changes — edit a field and the button lights up.',
     saved: 'Saved.',
     unauthorizedEndpoint:
@@ -547,12 +579,42 @@ export const en = {
     promptDialogAriaLabel: 'What gets sent to the AI',
     whatGetsSentToAi: 'What gets sent to the AI',
     close: 'Close',
-    language: 'Language',
+    chapterReadout: (i: number, total: number, changed: number) =>
+      `${String(i).padStart(2, '0')} / ${String(total).padStart(2, '0')} · ${changed} changed`,
+    chapterAria: (no: string, title: string) => `Go to ${no} ${title}`,
   },
 
-  // ---- ConnectionSection.tsx ----
+  // ---- ConnectionSection.tsx (01 AI endpoint) ----
   connection: {
-    urlHint: (endpoint: string) => `Calls ${endpoint}/chat/completions — most services need the base URL to end in`,
+    baseUrl: {
+      label: 'Base URL',
+      desc: "The endpoint's root address. Calls {Base URL}/chat/completions — most services need it to end in /v1; a local model can be http://localhost.",
+      default: 'https://api.openai.com/v1',
+    },
+    apiKey: {
+      label: 'API Key',
+      desc: 'The key the endpoint gave you. Stored only on this computer; never written into a backup, never sent to Bilibili.',
+    },
+    model: {
+      label: 'Model',
+      desc: "The model name as the endpoint's documentation spells it. Classifying videos and generating folder descriptions use the same one.",
+      default: 'gpt-4o-mini',
+    },
+    test: {
+      label: 'Test connection',
+      desc: 'Sends one short prompt and shows the reply. The first time, Chrome asks for permission — only for the origin you entered.',
+    },
+    vision: {
+      label: 'This model understands images',
+      desc: 'When on, press "Test vision": one picture is sent and you confirm the description matches. Only then does "Attach covers" in 02 take effect. Re-test after changing the model or URL.',
+      default: 'off',
+      stateOff: 'Off · text-only classification',
+      stateOn: 'On',
+    },
+    compat: {
+      label: 'Endpoint compatibility',
+      desc: 'Temperature and extra request parameters (JSON). Most people never change these; DeepSeek needs one line here to switch thinking mode off.',
+    },
     apiKeyHide: 'Hide',
     apiKeyShow: 'Show',
     testing: 'Testing…',
@@ -563,17 +625,15 @@ export const en = {
     modelReply: (text: string) => `Model reply: ${text}`,
     modelReplyReasoningOnly: (text: string) => `Model reply (reasoning only): ${text}`,
     noReplyContent: 'The model returned no reply content',
-    modelUnderstandsImages: 'This model understands images',
     verified: 'Verified',
-    testVisionHint: 'Must pass this test before "attach cover" appears below. Re-test after changing the model or base URL.',
     testingVision: 'Testing…',
     testVision: 'Test vision',
-    doesItMatchQuestion: 'The image is a pink circle with a white folder icon — does the description match it?',
+    doesItMatchQuestion:
+      'The image is a dark rounded square with a white tick mark and a pink progress bar with a round knob — does the description match it?',
     matchesEnable: 'It matches, enable',
     visionEnabled: 'Vision mode enabled.',
     doesntMatch: "Doesn't match",
     visionDisabled: "Doesn't match — vision mode stays off.",
-    endpointCompatibility: 'Endpoint compatibility (temperature, extra parameters)',
     temperature: 'Temperature',
     temperatureNotSent: 'Not sent',
     temperatureHint:
@@ -586,7 +646,7 @@ export const en = {
     invalidBaseUrl: (message: string) => `Invalid base URL: ${message}`,
   },
 
-  // ---- DataSourcesSection.tsx ----
+  // ---- DataSourcesSection.tsx (02 What the AI sees) ----
   dataSources: {
     sources: {
       detail: {
@@ -594,6 +654,7 @@ export const en = {
         badge: 'Recommended',
         desc: (ttlDays: number) =>
           `Tags, collection name and sibling titles, category, activity post, part titles, collaborators. Tags are the single biggest driver of accuracy — without them, the AI can only guess from the title. Results are cached for ${ttlDays} days.`,
+        default: 'on',
         unit: 'requests',
       },
       subtitle: {
@@ -601,12 +662,14 @@ export const en = {
         descOn:
           'Human subtitles preferred, AI subtitles as fallback; two extra requests and 1–2 extra seconds per video. Only worth it for folders where titles and tags are both vague.',
         descOff: "Subtitles are fetched together with video detail; they won't be fetched while detail is off.",
+        default: 'off',
         unit: 'requests',
       },
       cover: {
         name: 'Attach covers for the model to see',
-        badgeNeedsTest: 'Needs "test vision" first',
+        badgeNeedsTest: 'Needs "Test vision" in 01 first',
         desc: 'Downloads one extra 320×200 thumbnail per video and switches to the vision batch (far fewer videos per call, so more AI calls overall). No measurable accuracy gain in testing — writing good folder descriptions matters far more.',
+        default: 'on, once the vision test has passed',
         unit: 'thumbnails',
       },
     },
@@ -614,6 +677,7 @@ export const en = {
     perBatchHintCover: 'Smaller batches when images are attached — more images makes mix-ups more likely; 8–12 is a good range.',
     perBatchHintText:
       'Plain text can send more per batch at once — 20–40 is a good range; switching to images automatically switches to the vision batch size.',
+    perBatchDefault: 'text 30 · with covers 10',
     whatGetsSent: 'What this setting sends',
     userMessageStart: 'The start of the user message.',
     expandFull: 'Expand full text',
@@ -627,7 +691,7 @@ export const en = {
       `The faded rows are data sources that are turned off. Moving isn't counted in the "≈${minutes} minutes" above — that only happens once you press the button on the review table.`,
   },
 
-  // ---- InstructionsSection.tsx ----
+  // ---- InstructionsSection.tsx (03 Classification instructions) ----
   instructions: {
     label: 'Custom classification instructions (optional)',
     example: 'MMD and 3D dance videos always go into "Art / Illustrations"; skip a tutorial video rather than guess its topic.',
@@ -635,8 +699,9 @@ export const en = {
       `Appended after the system prompt, taking priority over the built-in rules (except for output format). Used by both the Organise run and the video page's "Smart favourite".${used > 0 ? ` ${used}/${max} characters used.` : ''}`,
   },
 
-  // ---- SpeedDataSection.tsx ----
+  // ---- SpeedSection.tsx (04) + DataSection.tsx (05) ----
   speedData: {
+    preset: { label: 'Speed', default: '2 req/s · 800 ms (the "Default" preset)' },
     ratePresets: {
       safe: {
         label: 'Conservative',
@@ -649,31 +714,41 @@ export const en = {
       },
     },
     custom: 'Custom',
-    customNote: 'Current values don\'t match any preset — use "advanced" below to change them',
-    readWriteSpeed: 'Read & write speed',
+    customNote: "Current values don't match any preset — set them manually below",
     rateHint:
-      'Shared by organising and the follow clean-up (they never run at the same time). On -412 / -799 / HTTP 412 the run pauses and retries after 60→120→240 s; if it still fails, it stops and keeps its progress. Checking follows is one request per account — with thousands of follows, Conservative is the safer choice.',
-    advanced: 'Set values manually',
+      'On -412 / -799 / HTTP 412 the run pauses and retries after 60→120→240 s; if it still fails, it stops and keeps its progress. Checking follows is one request per account — with thousands of follows, Conservative is the safer choice.',
+    manual: {
+      label: 'Set values manually',
+      desc: 'The three numbers behind the presets. Change one and the preset above reads "Custom".',
+    },
     readRate: 'Read rate (req/s)',
     readRateHint: 'The actual interval also has ±30% jitter.',
     writeInterval: 'Write interval (ms)',
     writeIntervalHint: 'Minimum interval between two writes — folder moves, unfollows and follow-agains alike.',
     perMoveBatch: 'Videos per move',
     perMoveBatchHint: 'On -632 (limit exceeded), it automatically splits the batch in half.',
-    cache: 'Cache',
+    videoCache: {
+      label: 'Video cache',
+      desc: (detailTtlDays: number) =>
+        `Video details are kept for ${detailTtlDays} days, cover thumbnails for 7. Organise reuses them so a rerun on the same folder is mostly free.`,
+    },
+    activityCache: {
+      label: 'Account activity cache',
+      desc: (activityTtlDays: number) =>
+        `Each account's latest upload is kept for ${activityTtlDays} days; accounts that could not be checked are always looked up again. The follow clean-up only asks Bilibili about accounts missing here.`,
+    },
     calculating: 'Calculating…',
     cacheSummary: (details: number, covers: number) => `${details} video details, ${covers} covers`,
     activityCacheSummary: (n: number, oldest: string) =>
       `${n} checked ${n === 1 ? 'account' : 'accounts'}, oldest result from ${oldest}`,
     activityCacheEmpty: 'No checked accounts yet',
     clear: 'Clear',
-    cacheHint: (detailTtlDays: number, activityTtlDays: number) =>
-      `Video details are cached for ${detailTtlDays} days, covers for 7, each account's latest upload for ${activityTtlDays} (accounts that could not be checked are always looked up again). Clearing only means the next run refetches; your folders and follows are unaffected.`,
-    backup: 'Backup',
+    backup: {
+      label: 'Backup',
+      desc: "Folder descriptions are the hardest thing to rebuild here — each one takes a write or an AI generation. The export doesn't include the API key; it does include the follow threshold and “include quiet follows”.",
+    },
     exportDescriptionsAndSettings: 'Export descriptions & settings',
     import: 'Import',
-    backupHint:
-      "Folder descriptions are the hardest thing to rebuild here — each one takes a write or an AI generation. The export doesn't include the API key.",
   },
 
   // ---- Content script quick favourite (src/entrypoints/quickFav.content.ts) + core/quickFav.ts ----
@@ -950,6 +1025,12 @@ export const en = {
       notChecked: 'Not checked yet',
       daysTitle: (days: number) => `${days.toLocaleString('en-US')} days since the latest upload`,
       daysShort: (days: number) => `${days.toLocaleString('en-US')} d quiet`,
+      laneHeader: 'Quiet since',
+      thresholdCap: (days: number) => `${days.toLocaleString('en-US')} d`,
+      playheadLabel: 'Inactivity threshold — drag to change',
+      today: 'Today',
+      noVideosCell: 'Never',
+      state: { quiet: 'Quiet', uploading: 'Uploading', noVideos: 'No videos' },
       cannotSelectUnchecked: 'Not checked yet — cannot be selected',
       cannotSelectUnknown: 'Status unconfirmed — cannot be selected',
       status: {
@@ -993,6 +1074,8 @@ export const en = {
       retryFailed: (n: number) => `Retry ${n.toLocaleString('en-US')} failed`,
       rerun: 'Check again',
       clearResults: 'Clear results',
+      readout: (shown: number, total: number, ticked: number) =>
+        `${shown.toLocaleString('en-US')} / ${total.toLocaleString('en-US')} shown · ${ticked.toLocaleString('en-US')} ticked`,
     },
 
     // Produced in src/core/unfollow.ts

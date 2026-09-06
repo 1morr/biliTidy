@@ -2,37 +2,84 @@ import { useEffect, useState } from 'react';
 import { activityStats, cacheStats } from '@/core/cache';
 import { planOf } from '@/core/plan';
 import { normalizeSettings } from '@/core/settings';
+import { LANGUAGES } from '@/i18n';
 import { toAppError } from '@/shared/result';
 import type { Settings } from '@/shared/types';
 import { PromptPreview } from '../../components/PromptPreview';
-import { IconEye, IconGauge, IconPlug, IconRules } from '../../components/icons';
-import { useMessages } from '../../hooks/useI18n';
+import { IconArrowRight } from '../../components/icons';
+import { useLanguage, useMessages } from '../../hooks/useI18n';
 import { useAppStore } from '../../store';
 import { ensureEndpointPermission } from './permission';
 import { ConnectionSection } from './ConnectionSection';
+import { DataSection, type CacheCounts } from './DataSection';
 import { DataSourcesSection } from './DataSourcesSection';
 import { InstructionsSection } from './InstructionsSection';
-import { SpeedDataSection, type CacheCounts } from './SpeedDataSection';
-
-type SectionId = 'connection' | 'data' | 'instructions' | 'speed';
+import { LanguageSection } from './LanguageSection';
+import { ratePresetOf, SpeedSection } from './SpeedSection';
 
 /**
- * 設定頁的容器：段落導覽、draft／dirty／儲存，四塊內容各自成檔。
- *
- * 從一條約 4000px 的長捲改成「左側四段導覽＋一次只看一段」：每一段在左軌就看得到目前狀態，
- * 不必捲到那一段才知道端點通不通、哪幾個資料來源開著。
+ * 六章分三組：01–03 只有整理收藏（與收藏夾描述、影片頁）用得到，也就是「需要 AI」的那些；
+ * 04–06 兩個工具共用；清理關注自己的兩個設定不在這裡，左軌最後一列是通往關注頁的門。
+ */
+export type SectionId = 'endpoint' | 'sources' | 'instructions' | 'speed' | 'data' | 'language';
+const ORDER: SectionId[] = ['endpoint', 'sources', 'instructions', 'speed', 'data', 'language'];
+const ORGANISE: SectionId[] = ['endpoint', 'sources', 'instructions'];
+const SHARED: SectionId[] = ['speed', 'data', 'language'];
+
+type ScopeKey = 'organise' | 'descriptions' | 'quickFav' | 'follows';
+/** 每一章影響哪些功能、明確不影響哪個——寫在章節開頭，讓人不必讀完整章才知道跟自己有沒有關係 */
+const SCOPE: Record<SectionId, { used: ScopeKey[]; notUsed: ScopeKey[] }> = {
+  endpoint: { used: ['organise', 'descriptions', 'quickFav'], notUsed: ['follows'] },
+  sources: { used: ['organise', 'quickFav'], notUsed: ['follows'] },
+  instructions: { used: ['organise', 'quickFav'], notUsed: ['follows'] },
+  speed: { used: ['organise', 'follows', 'quickFav'], notUsed: [] },
+  data: { used: ['organise', 'follows'], notUsed: [] },
+  language: { used: ['organise', 'follows', 'quickFav'], notUsed: [] },
+};
+
+const chapterNo = (id: SectionId) => String(ORDER.indexOf(id) + 1).padStart(2, '0');
+
+const differs = (a: unknown, b: unknown) => ((a ?? '') !== (b ?? '') ? 1 : 0);
+
+/** 每一章有幾個欄位改過還沒存：控制列上亮起的章節段、主按鈕上的數字、`.why` 的句子都從這裡來 */
+function changedFields(draft: Settings, saved: Settings): Record<SectionId, number> {
+  const a = draft.ai;
+  const b = saved.ai;
+  return {
+    endpoint:
+      differs(a.baseUrl, b.baseUrl) +
+      differs(a.apiKey, b.apiKey) +
+      differs(a.model, b.model) +
+      differs(a.visionSupported, b.visionSupported) +
+      differs(a.visionVerifiedAt, b.visionVerifiedAt) +
+      differs(a.temperature, b.temperature) +
+      differs(a.extraBody, b.extraBody),
+    sources:
+      differs(draft.features.fetchDetail, saved.features.fetchDetail) +
+      differs(draft.features.fetchSubtitle, saved.features.fetchSubtitle) +
+      differs(a.attachCover, b.attachCover) +
+      differs(a.batchSizeText, b.batchSizeText) +
+      differs(a.batchSizeVision, b.batchSizeVision),
+    instructions: differs(a.customInstructions, b.customInstructions),
+    speed:
+      differs(draft.rate.readRps, saved.rate.readRps) +
+      differs(draft.rate.writeIntervalMs, saved.rate.writeIntervalMs) +
+      differs(draft.rate.moveBatchSize, saved.rate.moveBatchSize),
+    // 快取、備份、語言都是按下去立刻生效的動作，沒有草稿
+    data: 0,
+    language: 0,
+  };
+}
+
+/**
+ * 設定頁的容器：章節導覽、draft／dirty／儲存，六章內容各自成檔。
  *
  * draft 一定要留在這裡——視覺測試會立刻寫進 storage，而只寫 `ai` 再把 dirty 清掉的話，
  * 下面那個 useEffect 會把 draft 重設成 saved，使用者在 features／rate 的編輯就消失了。
  */
-export function SettingsPage() {
+export function SettingsPage({ onOpenFollows }: { onOpenFollows: () => void }) {
   const m = useMessages();
-  const titles: Record<SectionId, { title: string; desc: string }> = {
-    connection: m.settings.sectionTitles.connection,
-    data: m.settings.sectionTitles.data,
-    instructions: m.settings.sectionTitles.instructions,
-    speed: m.settings.sectionTitles.speed,
-  };
+  const language = useLanguage();
   const saved = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
   const descriptions = useAppStore((s) => s.descriptions);
@@ -40,7 +87,7 @@ export function SettingsPage() {
   const [draft, setDraft] = useState<Settings>(saved);
   const [dirty, setDirty] = useState(false);
   const [saveNote, setSaveNote] = useState<string | null>(null);
-  const [section, setSection] = useState<SectionId>('connection');
+  const [section, setSection] = useState<SectionId>('endpoint');
   const [cache, setCache] = useState<CacheCounts | null>(null);
   const [promptOpen, setPromptOpen] = useState(false);
 
@@ -75,6 +122,12 @@ export function SettingsPage() {
       return true;
     }
   })();
+
+  const changed = changedFields(draft, saved);
+  const changedTotal = ORDER.reduce((n, id) => n + changed[id], 0);
+  const changedNames = ORDER.filter((id) => changed[id] > 0)
+    .map((id) => `${chapterNo(id)} ${m.settings.sections[id].title}`)
+    .join(', ');
 
   async function save() {
     setSaveNote(null);
@@ -144,83 +197,95 @@ export function SettingsPage() {
     }
   }
 
+  // 左軌每一章下面那一行摘要：不必點進去就知道這一章目前的狀態
   const customLength = draft.ai.customInstructions?.trim().length ?? 0;
-  const nav: { id: SectionId; icon: React.ReactNode; status: React.ReactNode }[] = [
-    {
-      id: 'connection',
-      icon: <IconPlug className="ic" />,
-      status: plan.aiReady ? (
-        <>
-          <span className="dot" style={{ background: 'var(--ok)' }} />
-          {m.settings.nav.connected} · <span className="mono">{draft.ai.model}</span>
-          {visionActive && <span className="tag ok">{m.settings.nav.visionVerified}</span>}
-        </>
-      ) : (
-        <>
-          <span className="dot" style={{ background: 'var(--bad)' }} />
-          {m.settings.nav.noEndpointOrModel}
-        </>
-      ),
-    },
-    {
-      id: 'data',
-      icon: <IconEye className="ic" />,
-      status: (
-        <>
-          <span className={draft.features.fetchDetail ? 'tag ok' : 'tag'}>{m.settings.nav.tags.detail}</span>
-          <span className={plan.withSubtitle ? 'tag ok' : 'tag'}>{m.settings.nav.tags.subtitle}</span>
-          <span className={coverActive ? 'tag ok' : 'tag'}>{m.settings.nav.tags.cover}</span>
-          <span className="mono">{m.settings.nav.perBatch(plan.batchSize)}</span>
-        </>
-      ),
-    },
-    {
-      id: 'instructions',
-      icon: <IconRules className="ic" />,
-      status: customLength > 0 ? m.settings.nav.customInstructions(customLength) : m.settings.nav.noCustomInstructions,
-    },
-    {
-      id: 'speed',
-      icon: <IconGauge className="ic" />,
-      status: (
-        <>
-          <span className="mono">{draft.rate.readRps} req/s</span>
-          {cache && (
-            <>
-              <span>·</span>
-              <span className="mono">{m.settings.nav.cache(cache.details)}</span>
-              <span>·</span>
-              <span className="mono">{m.settings.nav.activityCache(cache.accounts)}</span>
-            </>
-          )}
-        </>
-      ),
-    },
-  ];
+  const preset = ratePresetOf(draft.rate);
+  const presetLabel = preset === 'custom' ? m.speedData.custom : m.speedData.ratePresets[preset].label;
+  const status: Record<SectionId, React.ReactNode> = {
+    endpoint: plan.aiReady ? (
+      <>
+        <span className="dot" style={{ background: 'var(--ok)' }} />
+        <span>{m.settings.nav.connected}</span>
+        <span>·</span>
+        <span className="ellipsis mono">{draft.ai.model}</span>
+        {visionActive && <span className="tag ok">{m.settings.nav.visionVerified}</span>}
+      </>
+    ) : (
+      <>
+        <span className="dot" style={{ background: 'var(--bad)' }} />
+        <span className="ellipsis">{m.settings.nav.noEndpointOrModel}</span>
+      </>
+    ),
+    sources: (
+      <>
+        <span className={draft.features.fetchDetail ? 'tag ok' : 'tag'}>{m.settings.nav.tags.detail}</span>
+        <span className={plan.withSubtitle ? 'tag ok' : 'tag'}>{m.settings.nav.tags.subtitle}</span>
+        <span className={coverActive ? 'tag ok' : 'tag'}>{m.settings.nav.tags.cover}</span>
+        <span className="ellipsis mono">{m.settings.nav.perBatch(plan.batchSize)}</span>
+      </>
+    ),
+    instructions: (
+      <span className="ellipsis">
+        {customLength > 0 ? m.settings.nav.customInstructions(customLength) : m.settings.nav.noCustomInstructions}
+      </span>
+    ),
+    speed: (
+      <span className="ellipsis mono">{m.settings.nav.speed(presetLabel, draft.rate.readRps, draft.rate.writeIntervalMs)}</span>
+    ),
+    data: cache ? (
+      <>
+        <span className="mono">{m.settings.nav.cache(cache.details)}</span>
+        <span>·</span>
+        <span className="mono">{m.settings.nav.activityCache(cache.accounts)}</span>
+      </>
+    ) : (
+      <span>{m.speedData.calculating}</span>
+    ),
+    language: <span>{LANGUAGES.find((l) => l.id === language)?.label ?? language}</span>,
+  };
+
+  const chapter = (id: SectionId) => (
+    <button
+      key={id}
+      type="button"
+      className={section === id ? 'chap on' : 'chap'}
+      aria-current={section === id ? 'page' : undefined}
+      onClick={() => setSection(id)}
+    >
+      <span className="no">{chapterNo(id)}</span>
+      <span className="nm">{m.settings.sections[id].title}</span>
+      <span className="st">{status[id]}</span>
+    </button>
+  );
+
+  const scope = SCOPE[section];
+  const title = m.settings.sections[section];
 
   return (
     <div className="page">
       <div className="work rail-center">
         <aside className="rail">
-          <div className="rail-sec" style={{ borderBottom: 0, paddingBottom: 10 }}>
-            <span className="lbl">{m.app.nav.settings}</span>
+          <div className="chap-grp">
+            <span className="no">01 – 03</span>
+            <span className="g">{m.settings.groups.organise}</span>
           </div>
-          <div className="snav">
-            {nav.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                className={section === n.id ? 'snav-item on' : 'snav-item'}
-                onClick={() => setSection(n.id)}
-              >
-                {n.icon}
-                <span>
-                  <span className="nm">{titles[n.id].title}</span>
-                  <span className="st">{n.status}</span>
-                </span>
-              </button>
-            ))}
+          {ORGANISE.map(chapter)}
+          <div className="chap-grp">
+            <span className="no">04 – 06</span>
+            <span className="g">{m.settings.groups.shared}</span>
           </div>
+          {SHARED.map(chapter)}
+          <div className="chap-grp">
+            <span className="no">—</span>
+            <span className="g">{m.settings.groups.follows}</span>
+          </div>
+          <button type="button" className="chap link" onClick={onOpenFollows}>
+            <span className="no">
+              <IconArrowRight size={13} />
+            </span>
+            <span className="nm">{m.settings.followsPointer.title(draft.follows.thresholdDays)}</span>
+            <span className="st">{m.settings.followsPointer.desc}</span>
+          </button>
           <div className="rail-foot" style={{ display: 'block', lineHeight: 1.6 }}>
             {m.settings.keyStoredLocally} <span className="mono">chrome.storage.local</span>
             {m.settings.keyStoredLocallyAfter}
@@ -229,13 +294,36 @@ export function SettingsPage() {
 
         <main className="center">
           <div className="c-head">
-            <div className="c-title">{titles[section].title}</div>
-            <p className="desc">{titles[section].desc}</p>
+            <div className="c-title">
+              <span className="no">{chapterNo(section)}</span>
+              {title.title}
+            </div>
+            <div className="scope">
+              <span>{m.settings.scope.usedBy}</span>
+              {scope.used.map((k) => (
+                <span key={k} className="badge on">
+                  {m.settings.scope[k]}
+                </span>
+              ))}
+              {scope.notUsed.length > 0 && (
+                <>
+                  <span className="dim">·</span>
+                  <span>{m.settings.scope.notUsedBy}</span>
+                  {scope.notUsed.map((k) => (
+                    <span key={k} className="badge off">
+                      {m.settings.scope[k]}
+                    </span>
+                  ))}
+                </>
+              )}
+            </div>
+            <p className="intro">{title.desc}</p>
           </div>
 
-          {section === 'connection' && (
+          {section === 'endpoint' && (
             <ConnectionSection
               draft={draft}
+              saved={saved}
               setAi={setAi}
               visionActive={visionActive}
               extraBodyInvalid={extraBodyInvalid}
@@ -243,7 +331,7 @@ export function SettingsPage() {
               onPermissionNote={setSaveNote}
             />
           )}
-          {section === 'data' && (
+          {section === 'sources' && (
             <DataSourcesSection
               draft={draft}
               setAi={setAi}
@@ -253,25 +341,48 @@ export function SettingsPage() {
               onOpenPrompt={() => setPromptOpen(true)}
             />
           )}
-          {section === 'instructions' && <InstructionsSection draft={draft} setAi={setAi} />}
-          {section === 'speed' && (
-            <SpeedDataSection
-              draft={draft}
-              setRate={setRate}
-              cache={cache}
-              onCacheCleared={refreshCache}
-              onExport={exportBackup}
-              onImport={importBackup}
-            />
+          {section === 'instructions' && <InstructionsSection draft={draft} saved={saved} setAi={setAi} />}
+          {section === 'speed' && <SpeedSection draft={draft} saved={saved} setRate={setRate} />}
+          {section === 'data' && (
+            <DataSection cache={cache} onCacheCleared={refreshCache} onExport={exportBackup} onImport={importBackup} />
           )}
+          {section === 'language' && <LanguageSection />}
         </main>
       </div>
 
       <footer className="runbar">
-        <button type="button" className="btn primary" disabled={!dirty} onClick={() => void save()}>
-          {m.settings.save}
+        <button type="button" className="btn primary" disabled={!dirty || changedTotal === 0} onClick={() => void save()}>
+          {changedTotal > 0 ? m.settings.saveN(changedTotal) : m.settings.save}
         </button>
-        <span className="why">{saveNote ?? (dirty ? m.settings.unsavedChanges : m.settings.nothingToSave)}</span>
+        <span className="why">
+          {saveNote ?? (changedTotal > 0 ? m.settings.unsavedIn(changedNames) : m.settings.nothingToSave)}
+        </span>
+        <div className="chapters">
+          <div className="segs">
+            {ORDER.map((id, i) => (
+              <span key={id} style={{ display: 'contents' }}>
+                <button
+                  type="button"
+                  className={['seg', changed[id] > 0 ? 'dirty' : '', section === id ? 'now' : ''].filter(Boolean).join(' ')}
+                  aria-label={m.settings.chapterAria(chapterNo(id), m.settings.sections[id].title)}
+                  onClick={() => setSection(id)}
+                />
+                {i === ORGANISE.length - 1 && <span className="gap" />}
+              </span>
+            ))}
+          </div>
+          <div className="seg-labels" aria-hidden="true">
+            {ORDER.map((id, i) => (
+              <span key={id} style={{ display: 'contents' }}>
+                <span className={section === id ? 'now' : undefined}>{chapterNo(id)}</span>
+                {i === ORGANISE.length - 1 && <span className="gap" />}
+              </span>
+            ))}
+          </div>
+        </div>
+        <span className="read-inline mono">
+          {m.settings.chapterReadout(ORDER.indexOf(section) + 1, ORDER.length, changedTotal)}
+        </span>
       </footer>
 
       {promptOpen && <PromptDialogWindow settings={draft} onClose={() => setPromptOpen(false)} />}

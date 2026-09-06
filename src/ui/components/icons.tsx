@@ -29,17 +29,18 @@ function svg(size: number, className: string | undefined, children: React.ReactN
 }
 
 /**
- * 品牌記號：一顆打勾的圓——「先審核、再動手」是兩個功能共同的核心，
- * 與工具列圖示（`scripts/gen-icons.mjs`：粉色圓底＋白色勾）同一個符號。
+ * 品牌記號：一塊影片黑的瓦片，上面是「先審核」的勾，下面是走到一半的粉色進度軌與播放頭——
+ * 與工具列圖示（`public/icon/icon.svg`，由 `scripts/gen-icons.mjs` 轉成 PNG）同一個符號、同一組座標。
  */
-export function IconBrand({ size = 17, className }: Props) {
-  return svg(
-    size,
-    className,
-    <>
-      <circle cx="8" cy="8" r="6.4" />
-      <path d="M5 8.3 7.2 10.5 11.2 5.9" strokeWidth={1.8} />
-    </>,
+export function IconBrand({ size = 18, className }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 128 128" aria-hidden="true" className={className}>
+      <rect x="4" y="4" width="120" height="120" rx="28" fill="#15161a" stroke="#3a3d46" strokeWidth={6} />
+      <path d="M34 66 L56 88 L96 40" fill="none" stroke="#f2f3f5" strokeWidth={16} strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="24" y="100" width="80" height="10" rx="5" fill="#33363e" />
+      <rect x="24" y="100" width="54" height="10" rx="5" fill="#ff5c8d" />
+      <circle cx="78" cy="105" r="12" fill="#ff5c8d" />
+    </svg>
   );
 }
 
@@ -195,51 +196,5 @@ export function IconDoc({ size = 14, className }: Props) {
       <path d="M2.5 3.5h11v9h-11z" />
       <path d="M4.6 6.4h4.4M4.6 9h6.8" />
     </>,
-  );
-}
-
-/** 設定的段落導覽（20px 網格） */
-export function IconPlug({ size = 18, className }: Props) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true" className={className} {...stroke}>
-      <path d="M8.2 11.8a3.6 3.6 0 0 0 5.1 0l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1 1" />
-      <path d="M11.8 8.2a3.6 3.6 0 0 0-5.1 0l-2.6 2.6a3.6 3.6 0 0 0 5.1 5.1l1-1" />
-    </svg>
-  );
-}
-
-export function IconEye({ size = 18, className }: Props) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true" className={className} {...stroke}>
-      <path d="M1.8 10S4.9 4.6 10 4.6 18.2 10 18.2 10 15.1 15.4 10 15.4 1.8 10 1.8 10Z" />
-      <circle cx="10" cy="10" r="2.4" />
-    </svg>
-  );
-}
-
-export function IconRules({ size = 18, className }: Props) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true" className={className} {...stroke}>
-      <path d="M3.5 4.5h13M3.5 9h13M3.5 13.5h8" />
-    </svg>
-  );
-}
-
-export function IconGauge({ size = 18, className }: Props) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true" className={className} {...stroke}>
-      <circle cx="10" cy="11" r="6.4" />
-      <path d="M10 11V7.4M10 2.6v1.4" />
-    </svg>
-  );
-}
-
-export function IconData({ size = 18, className }: Props) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true" className={className} {...stroke}>
-      <ellipse cx="10" cy="5" rx="6.4" ry="2.4" />
-      <path d="M3.6 5v10c0 1.3 2.9 2.4 6.4 2.4s6.4-1.1 6.4-2.4V5" />
-      <path d="M3.6 10c0 1.3 2.9 2.4 6.4 2.4s6.4-1.1 6.4-2.4" />
-    </svg>
   );
 }

@@ -22,7 +22,19 @@ export function RequestTable({ estimate, compact = false }: { estimate: Estimate
         {estimate.rows.map((row) => (
           <tr key={row.key} className={row.count === 0 ? 'off' : undefined}>
             <td className="vtop">
-              <span className="endpoint">{row.endpoint}</span>
+              {/* 端點名只准在斜線後面斷行，不能把 `created/list` 從字中間切開 */}
+              <span className="endpoint">
+                {row.endpoint.split('/').map((part, i, all) => (
+                  <span key={i}>
+                    {part}
+                    {i < all.length - 1 && (
+                      <>
+                        /<wbr />
+                      </>
+                    )}
+                  </span>
+                ))}
+              </span>
             </td>
             <td className="vtop">
               {row.purpose}

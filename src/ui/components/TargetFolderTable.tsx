@@ -86,7 +86,7 @@ export function TargetFolderTable({
                 <td className={desc ? 'muted' : 'dim'}>
                   {desc || m.targetFolderTable.noDescriptionAiOnlyName}
                   {fromBili && (
-                    <span className="tag pink" style={{ marginLeft: 8 }}>
+                    <span className="tag info" style={{ marginLeft: 8 }}>
                       {m.targetFolderTable.fromBilibiliDescription}
                     </span>
                   )}
