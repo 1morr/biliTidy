@@ -1,0 +1,16 @@
+node_modules
+package-lock.json
+*.md
+
+# 建置產物與本機暫存（與 .gitignore 對齊）
+.output
+.wxt
+.claude
+.impeccable
+.eval-tmp
+.smoke-profile
+.ui-profile
+.quickfav-profile
+
+# 設計畫布的原始檔（Design Components 的 .dc.html，重排會動到 <pre> 裡的空白）
+design

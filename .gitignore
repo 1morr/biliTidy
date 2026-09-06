@@ -1,0 +1,19 @@
+node_modules/
+.output/
+.wxt/
+*.log
+.DS_Store
+stats.html
+.smoke-profile/
+.ui-profile/
+.quickfav-profile/
+.env
+
+# 分類品質實測的暫存資料與工具（含真實帳號資料，不進版控）
+.eval-tmp/
+.claude/
+
+# 介面重做時的設計畫布原始檔（.dc.html ＋ seed 出來的 html）與設計檢查器的本機設定：
+# 實作已經在 src/ui 裡，這些是過程產物，留在本機就好
+design/
+.impeccable/

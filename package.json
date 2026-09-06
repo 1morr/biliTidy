@@ -1,0 +1,46 @@
+{
+  "name": "bilitidy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "先審核、再收拾：AI 整理 Bilibili 收藏夾，並清掉不再投稿的關注——一個 Chrome 擴充功能",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "wxt prepare",
+    "gen-icons": "node scripts/gen-icons.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "mock-ai": "node scripts/mock-ai.mjs",
+    "ui-preview": "node scripts/ui-preview.mjs",
+    "quickfav-preview": "node scripts/quickfav-preview.mjs"
+  },
+  "dependencies": {
+    "@wxt-dev/module-react": "^1.2.2",
+    "idb": "^8.0.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "spark-md5": "^3.0.2",
+    "wxt": "^0.21.4",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@types/spark-md5": "^3.0.5",
+    "fake-indexeddb": "^6.2.5",
+    "oxlint": "^1.80.0",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}
