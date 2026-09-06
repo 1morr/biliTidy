@@ -256,13 +256,13 @@ await context.route(/api\.bilibili\.com\/x\/relation\/whispers/, (route) => {
 // 停下的情境：第 failAfter 次之後的查詢回 -101（未登入），整輪立刻停下、橫幅、剩下的列鎖著
 let lookups = 0;
 let failAfter = Number.POSITIVE_INFINITY;
-await context.route(/api\.bilibili\.com\/x\/series\/recArchivesByKeywords/, (route) => {
+await context.route(/api\.bilibili\.com\/x\/space\/wbi\/arc\/search/, (route) => {
   const mid = Number(new URL(route.request().url()).searchParams.get('mid'));
   lookups++;
   if (lookups > failAfter) return route.fulfill({ json: { code: -101, message: '账号未登录', ttl: 1 } });
   const age = latestAgeOf(mid);
   if (age === 'error') return route.fulfill({ json: { code: -404, message: '啥都木有', ttl: 1 } });
-  const archives =
+  const vlist =
     age === null
       ? []
       : [
@@ -270,10 +270,10 @@ await context.route(/api\.bilibili\.com\/x\/series\/recArchivesByKeywords/, (rou
             aid: mid,
             bvid: `BV1${String(mid).slice(-6)}xyz`,
             title: `【${mid}】最後一支投稿的標題會顯示在這裡`,
-            pubdate: now - age * DAY,
+            created: now - age * DAY,
           },
         ];
-  json(route, { archives, page: { num: 1, size: 20, total: archives.length } });
+  json(route, { list: { vlist, tlist: {} }, page: { pn: 1, ps: 1, count: vlist.length } });
 });
 
 // 寫入需要 bili_jct（csrf）。假 cookie 放在拋棄式 profile 裡，所有 B 站請求都被攔截，碰不到真實帳號

@@ -713,6 +713,7 @@ export const zhHant: Messages = {
       notJson: '回應不是合法 JSON',
       wbiOrRiskCheckFailed: 'WBI 簽名或風控校驗失敗（v_voucher）',
       navMissingWbi: 'nav 回應缺少 wbi_img',
+      archiveListEmpty: 'B 站說這個帳號有投稿卻一支都沒回，無法確認最後投稿時間',
       noBiliJctCookie: '找不到 bili_jct cookie，請先登入 Bilibili',
     },
     network: {

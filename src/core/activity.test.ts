@@ -21,7 +21,7 @@ const entry = (over: Partial<FollowEntry> = {}): FollowEntry => ({
 
 describe('classifyActivity', () => {
   it('null 代表 B 站明確說沒有影片', () => {
-    expect(classifyActivity(1, null, NOW)).toMatchObject({ status: 'noVideos', checkedAt: NOW, schema: 1 });
+    expect(classifyActivity(1, null, NOW)).toMatchObject({ status: 'noVideos', checkedAt: NOW, schema: 2 });
   });
   it('有影片就帶著最新一支', () => {
     const latest = { bvid: 'BV1', title: 't', pubdate: secAgo(3) };

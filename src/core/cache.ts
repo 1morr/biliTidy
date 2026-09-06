@@ -25,8 +25,8 @@ const DB_VERSION = 1;
  * `sweepStale` 靠它把改版前留下的舊 schema 列清掉，不然 `getCachedDetails` 的過濾只會讓它們變成
  * 永遠讀不到、永遠不會被刪的孤兒列。 */
 const CURRENT_DETAIL_SCHEMA = 1;
-/** `ActivityRecord.schema` 目前唯一合法值；同上 */
-const CURRENT_ACTIVITY_SCHEMA = 1;
+/** `ActivityRecord.schema` 目前唯一合法值；同上。1 →（2026-09）2：換掉會把活躍帳號判成「從未投稿」的端點，舊列一律重查 */
+const CURRENT_ACTIVITY_SCHEMA = 2;
 
 /** 封面是 base64 data URL，一張就有機會到幾十 KB；上限之外用 LRU（依 fetchedAt）淘汰最舊的。 */
 export const COVER_CAP = 5000;

@@ -8,12 +8,12 @@ import { DAY_MS } from './cache';
 
 /** 把 API 的原料分類：`null`＝B 站明確說沒有影片 */
 export function classifyActivity(mid: number, latest: LatestArchive | null, now = Date.now()): ActivityRecord {
-  if (latest === null) return { mid, status: 'noVideos', checkedAt: now, schema: 1 };
-  return { mid, status: 'videos', latest, checkedAt: now, schema: 1 };
+  if (latest === null) return { mid, status: 'noVideos', checkedAt: now, schema: 2 };
+  return { mid, status: 'videos', latest, checkedAt: now, schema: 2 };
 }
 
 export function unknownActivity(mid: number, reason: string, now = Date.now()): ActivityRecord {
-  return { mid, status: 'unknown', reason, checkedAt: now, schema: 1 };
+  return { mid, status: 'unknown', reason, checkedAt: now, schema: 2 };
 }
 
 /**

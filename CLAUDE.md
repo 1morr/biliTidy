@@ -119,8 +119,10 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 - `relation/whispers`：文檔沒列分頁參數，但關注管理器腳本一直帶著 `pn`／`ps=50` 翻頁，照做。
 - `relation/batch/modify` **只接受 act 1（關注）與 5（拉黑）**，取關一律單筆 `relation/modify`；悄悄關注要用 act 4。
 - `relation/tags/addUsers` 的 `tagids` 可以含 `-10`（特別關注）；`22104` 分組不存在、`22105` 未關注。
-- `series/recArchivesByKeywords`：風控回的是 **HTTP 200 加非 0 code、沒有 archives**，讀得太天真會把活躍帳號當成從沒發過片。
-  `bilibili/archive.ts` 只在 `code 0` 且 archives 空時回 `null`，其餘一律丟例外。帶 `ps=1&pn=1` 只取最新一支；`pn=0` 會忽略 ps 回全部，不要用。
+- `space/wbi/arc/search`（查活躍度）：**要 WBI 簽名**（不簽名回 `-403`），`order=pubdate&ps=1&pn=1` 取最新一支，時間欄位是 `created`。
+  **只有 `page.count === 0` 才算「沒有影片」**；`count > 0` 卻回空清單、或連 `count` 都沒有，一律丟例外變成「未知」。
+  **不要用 `series/recArchivesByKeywords`**：它是推薦稿件介面不是投稿列表，回幾筆與 `ps` 無關（`ps=1` 對每個帳號都回 code 0 加空 archives），
+  2026-09 就是它把整份關注清單判成「從未投稿」（`design.md` 11／17）。改活躍度的判定方式要一起跳 `ActivityRecord.schema`，讓舊快取作廢。
 - `biliFetch` 的 envelope `data` 是選填（關係操作類端點沒有 data）；`activityDetail` 同時認收藏夾（bvid／aid／media_id）與關注（mid／pn／fid）的參數。
 - 錯誤碼：`-101` 未登入、`-111` csrf、`-352`／`-412`／HTTP 412／`-799` 風控（`net/backoff.ts` 統一退避 60 → 120 → 240 秒後放棄）、`-632` 數量限制、
   `22009` 關注上限、`22013` 帳號已註銷、`40061` 用戶不存在。

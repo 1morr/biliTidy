@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { VideoDetail } from '@/shared/types';
+import type { ActivityRecord, VideoDetail } from '@/shared/types';
 
 /**
  * 每個測試都要是全新的 IndexedDB，不然「TTL／schema 過期列會在下次開啟時被清掉」這種測試
@@ -125,16 +125,16 @@ describe('core/cache（帳號活躍度）', () => {
   it('isFresh：unknown 永遠不新鮮，過期也不新鮮', async () => {
     const cache = await importCache();
     const now = Date.now();
-    expect(cache.isFresh({ mid: 1, status: 'noVideos', checkedAt: now, schema: 1 }, now)).toBe(true);
-    expect(cache.isFresh({ mid: 1, status: 'unknown', checkedAt: now, schema: 1 }, now)).toBe(false);
-    expect(cache.isFresh({ mid: 1, status: 'noVideos', checkedAt: now - 31 * cache.DAY_MS, schema: 1 }, now)).toBe(false);
+    expect(cache.isFresh({ mid: 1, status: 'noVideos', checkedAt: now, schema: 2 }, now)).toBe(true);
+    expect(cache.isFresh({ mid: 1, status: 'unknown', checkedAt: now, schema: 2 }, now)).toBe(false);
+    expect(cache.isFresh({ mid: 1, status: 'noVideos', checkedAt: now - 31 * cache.DAY_MS, schema: 2 }, now)).toBe(false);
   });
 
   it('getActivities 預設只回新鮮的；onlyFresh=false 連 unknown 都回；clearActivities 不動影片快取', async () => {
     const cache = await importCache();
     const now = Date.now();
-    await cache.putActivity({ mid: 1, status: 'noVideos', checkedAt: now, schema: 1 });
-    await cache.putActivity({ mid: 2, status: 'unknown', reason: 'x', checkedAt: now, schema: 1 });
+    await cache.putActivity({ mid: 1, status: 'noVideos', checkedAt: now, schema: 2 });
+    await cache.putActivity({ mid: 2, status: 'unknown', reason: 'x', checkedAt: now, schema: 2 });
     await cache.putDetail(detail('BV1', now));
     expect(Array.from((await cache.getActivities([1, 2], { onlyFresh: true, now })).keys())).toEqual([1]);
     expect((await cache.getActivities([1, 2], { onlyFresh: false, now })).size).toBe(2);
@@ -142,5 +142,19 @@ describe('core/cache（帳號活躍度）', () => {
     await cache.clearActivities();
     expect(await cache.activityStats()).toEqual({ count: 0, oldestAt: null });
     expect((await cache.cacheStats()).details).toBe(1);
+  });
+
+  it('舊 schema 的活躍度列會在下次開啟資料庫時被刪掉（換端點之後的誤判紀錄不能留著）', async () => {
+    const cache1 = await importCache();
+    const now = Date.now();
+    // schema 1 是 `recArchivesByKeywords` 那版留下的紀錄，會把活躍帳號記成 noVideos
+    await cache1.putActivity({ mid: 1, status: 'noVideos', checkedAt: now, schema: 1 } as unknown as ActivityRecord);
+    await cache1.putActivity({ mid: 2, status: 'noVideos', checkedAt: now, schema: 2 });
+    expect((await cache1.activityStats()).count).toBe(2);
+
+    const cache2 = await importCache();
+    await cache2.getActivities([], { onlyFresh: true, now }); // 等 db() 的 sweep 做完
+    expect((await cache2.activityStats()).count).toBe(1);
+    expect(Array.from((await cache2.getActivities([1, 2], { onlyFresh: true, now })).keys())).toEqual([2]);
   });
 });

@@ -234,8 +234,8 @@ export interface FollowSnapshot {
 
 /**
  * 逐帳號查最新影片的三態結果（沿用 Java 版）：
- * `videos`＝`code 0` 且 `archives` 非空；`noVideos`＝`code 0` 且空；
- * `unknown`＝其餘一切（請求失敗、非 0 code、風控）。未知的帳號永遠不能被當成不活躍。
+ * `videos`＝`code 0` 且投稿列表有東西；`noVideos`＝`code 0` 且 `page.count === 0`；
+ * `unknown`＝其餘一切（請求失敗、非 0 code、風控、說有投稿卻一支都沒回）。未知的帳號永遠不能被當成不活躍。
  */
 export type ActivityStatus = 'videos' | 'noVideos' | 'unknown';
 
@@ -254,7 +254,8 @@ export interface ActivityRecord {
   checkedAt: number;
   /** `unknown` 時的原因（錯誤訊息），給畫面顯示 */
   reason?: string;
-  schema: 1;
+  /** 2＝改用 `space/wbi/arc/search` 之後的紀錄；1 是 `recArchivesByKeywords` 那版，會誤判成「從未投稿」，一律作廢 */
+  schema: 2;
 }
 
 /**

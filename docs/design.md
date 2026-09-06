@@ -58,7 +58,7 @@ relation/stat ──► following / whisper 數（估頁數、估時間）
 relation/tags ──► FollowTag[]（-10 特別關注、0 默认分组、自訂）
 relation/followings ps=50 ×⌈N/50⌉ ──► FollowEntry[]（mid、name、face、tagIds、special、kind、followedAt）
 relation/whispers ps=50 ×⌈M/50⌉ ──► FollowEntry[]（kind='whisper'）
-IndexedDB → 不新鮮才 series/recArchivesByKeywords ×1/帳號 ──► ActivityRecord（videos / noVideos / unknown）
+IndexedDB → 不新鮮才 space/wbi/arc/search ×1/帳號 ──► ActivityRecord（videos / noVideos / unknown）
 FollowRow[] = FollowEntry × ActivityRecord × 操作狀態 ──► 分面 → 勾選 → 作業列
 取關：relation/modify（act 2／4）×1/帳號，序列化
 撤銷：relation/batch/modify（act 1）≤20/批 → relation/tags/addUsers（同分組簽名併批）
@@ -441,12 +441,13 @@ DOM 依實測（2026-08）：`.video-toolbar-left-main` 底下每個功能是一
 
 | 端點 | 文檔 / 實測重點 |
 |---|---|
-| `GET /x/web-interface/nav` | 未登入回 `-101`。實測登入態回 `isLogin: true` 與 `mid`。這個專案用不到 WBI 金鑰。 |
+| `GET /x/web-interface/nav` | 未登入回 `-101`。實測登入態回 `isLogin: true` 與 `mid`。查活躍度要 WBI 簽名，金鑰就是從這裡拿的（`bilibili/http.ts` 每日快取一份）。 |
 | `GET /x/relation/stat?vmid` | `following`／`whisper`／`black`／`follower`；`whisper` 只有自己登入時非 0。實測 `following: 2221, whisper: 0`。 |
 | `GET /x/relation/tags` | `[{tagid, name, count, tip}]`；`-10` 特別關注、`0` 默认分组。實測 9 個，前四個 id 是 `-10, 0, <自訂>, <自訂>`。 |
 | `GET /x/relation/followings?vmid&pn&ps=50&order_type=` | **只有登入、Referer 為 bilibili.com 子網域、UA 不含 python 時才回清單**（否則 `code 0` 但空）——DNR 規則的理由。自己的清單可全部翻頁（別人的只到 100 個）。實測 `total: 2221`、一頁 50、欄位如文檔（`mid, attribute, mtime, tag, special, uname, face, sign, official_verify, vip, …`）；`tag` 默认分组為 `null`，`attribute` 第一頁全是 2。`order_type` 留空＝依關注順序（新到舊），`attention`＝依最常訪問。 |
 | `GET /x/relation/whispers?pn&ps=50` | 文檔沒列分頁參數；關注管理器腳本一直帶著 `pn`／`ps` 翻。實測帶參數回 `code 0`、`{list: [], re_version}`（該帳號沒有悄悄關注）。悄悄關注功能已下線（`attribute 1`「现已下线」），既有資料仍在。 |
-| `GET /x/series/recArchivesByKeywords?mid&keywords=&orderby=senddate&ps=1&pn=1` | Java 版沿用的端點：免登入、免 WBI。`keywords` 留空＝全部，`orderby=senddate` 最新在前。實測不帶 `ps` 回 19 支、`pubdate` 遞減；**`ps=1&pn=1` 回同一支第一名**，所以採用 `ps=1`（payload 小約 20 倍）。風控時回 **HTTP 200 加非 0 code、沒有 `archives`**——這就是三態模型存在的理由（見 [12](#12-三態與勾選資格)）。 |
+| `GET /x/space/wbi/arc/search?mid&ps=1&pn=1&order=pubdate&index=1` | 空間頁自己用的投稿列表，**必須 WBI 簽名**（不簽名回 `-403 访问权限不足`）。`order=pubdate` 最新在前，時間欄位是 `created`（不是 `pubdate`）；`page.count` 是投稿總數，**`count === 0` 才是「真的沒發過片」**。2026-09-06 實測：mid 20754273 回 `count: 24` 與 2023-03-01 的最新一支、mid 3493074839800236 回 `count: 0`、mid 1875094289 回 `count: 831`。隱藏投稿或隱私空間回 `-403`，風控回非 0 code——都丟例外變成「未知」（見 [12](#12-三態與勾選資格)）。 |
+| ~~`GET /x/series/recArchivesByKeywords`~~（2026-09-06 換掉，見 [17](#17-關注評估後不做的事)） | 名字像投稿列表，其實是**「推薦稿件」介面**：回幾筆與 `ps` 不成比例，而且會少回。實測 `ps=1` 對**每一個**帳號都回 `code 0` 加空 `archives`（`page.total` 同時回 521）；`ps=20` 對 `total=74` 的帳號照樣回 0 筆。用它查活躍度＝整份關注清單被判成「從未投稿」。 |
 | `POST /x/relation/modify` | `fid`、`act`、`re_src`、`csrf`（cookie `bili_jct`）。`act`：1 關注、2 取關、**3 悄悄關注已下線**、4 取消悄悄關注、5 拉黑、6 取消拉黑、7 踢粉。錯誤碼 `22001` 不能對自己、`22002` 對方隱私、`22003` 在黑名單、`22009` 關注上限、`22013` 帳號已註銷、`22014` 已關注、`40061` 用戶不存在。**未在真實帳號上實測寫入**（見 [10](#10-未解決)）。 |
 | `POST /x/relation/batch/modify` | `fids` 逗號分隔 ≤50，**`act` 僅可為 1 或 5**（只能批次關注與拉黑，不能批次取關）。回 `data.failed_fids`。 |
 | `POST /x/relation/tags/addUsers` | `fids`、`tagids`（逗號分隔）；文檔範例 `tagids=-10,207542`，即特別關注可以這樣加。`22104` 分組不存在、`22105` 未關注。另有 `copyUsers`（複製）與 `moveUsers`（`beforeTagids`／`afterTagids`）。 |
@@ -458,7 +459,7 @@ DOM 依實測（2026-08）：`.video-toolbar-left-main` 底下每個功能是一
 
 Java 版修過一個會誤取關活躍帳號的 bug：風控回的是 HTTP 200 加非 0 code，payload 裡沒有影片清單，讀得太天真就等於「這個帳號從沒發過片」。修法是把狀態拆成三態並讓第三態永遠進不了批次。這裡把它做成結構而不是紀律：
 
-- `bilibili/archive.ts` 只在 `code 0` 且 `archives` 空時回 `null`；任何錯誤都丟例外，分類是 `core/checkActivity.ts` 的事。
+- `bilibili/archive.ts` 只在 `code 0` 且 **`page.count === 0`** 時回 `null`；任何錯誤都丟例外，分類是 `core/checkActivity.ts` 的事。「說有投稿卻一支都沒回」（`count > 0` 但清單空、或連 `count` 都沒有）也算錯誤——2026-09 換端點前就是這種回應被當成「沒有影片」。
 - `core/activity.ts` 的 `classifyActivity()` 把原料分成 `videos`／`noVideos`；`unknownActivity()` 記下原因。
 - `daysInactive()`：`noVideos` 回 `Infinity`（比任何門檻都不活躍）、`unknown` 與沒查過回 `null`；`isInactive()` 對 `null` 永遠 `false`。
 - **`canSelect(row)` 是唯一決定「這一列能不能被動手」的地方**：`pending` 且狀態已確認。勾選框的 `disabled`、`jobStore` 的 `toggle`／`setSelected`、「勾選顯示中的 N 個」、取關的目標挑選全部呼叫它。
@@ -516,6 +517,7 @@ Java 版修過一個會誤取關活躍帳號的 bug：風控回的是 HTTP 200 �
 ## 16. 活躍度快取
 
 - 與影片詳情、封面同一個 IndexedDB `bilitidy` 裡的 `activity` store（keyPath `mid`、索引 `checkedAt`），每列是 `ActivityRecord`（status、latest、checkedAt、reason、schema）。開啟時掃掉 schema 不對的舊列；設定頁的「清除」與收藏夾那一組分開。
+- **`schema` 目前是 2**。換掉 `recArchivesByKeywords` 時從 1 跳到 2，就是為了讓舊版留下的「從未投稿」紀錄自動作廢：TTL 有 30 天，不作廢的話換了端點也要等一個月才看得到正確結果。改活躍度紀錄的形狀或**判定方式**時都要跟著跳號。
 - **TTL 30 天是固定值，不做設定**（`ACTIVITY_TTL_DAYS`）：快取的是「最後一支影片的日期」，帳號之後又發片的話快取會**高估**不活躍天數——那正是會誤取關的方向，所以寧可多查也不讓人把它調成永不過期。
 - **`unknown` 永遠不新鮮**（`isFresh`）：查不到的下次一定重查；仍然寫進快取只是為了顯示上次是什麼時候失敗的。
 - 準備畫面的「只查沒有新鮮結果的／每個都重查」是這一輪的選擇，不是設定。
@@ -530,4 +532,4 @@ Java 版修過一個會誤取關活躍帳號的 bug：風控回的是 HTTP 200 �
 - **把「默认分组」以外的分組當成「一律保留」自動排除。** 那是使用者用分組分面自己決定的事，不該替他決定。
 - **把門檻做成每一輪的臨時值。** 它存進設定：使用者對「多久算安靜」的判斷不會每次不一樣。
 - **在 B 站個人空間頁加按鈕（content script）。** 沒有需求：這是幾個月跑一次的批次工具，從工具列圖示進來就好。
-- **`ps` 不帶、抓 20 支只用第一支。** Java 版是這樣，但實測 `ps=1` 可靠，沒理由多傳 20 倍的 payload。
+- **繼續用 `series/recArchivesByKeywords` 查投稿。**（2026-09-06 換掉）Java 版沿用它是因為免登入、免 WBI，這裡也照抄，還把 `ps` 從不帶改成 `ps=1` 省 payload——當時「`ps=1` 回同一支第一名」的實測只驗了一個帳號。實際上它是推薦稿件介面：回幾筆與 `ps` 無關，`ps=1` 對每一個帳號都回空 `archives`，於是**整份關注清單都被判成「從未投稿」**，而 `noVideos` 的不活躍天數是 `Infinity`——最危險的方向。改走空間頁的 `space/wbi/arc/search` 並以 `page.count === 0` 為唯一的「沒有影片」判準；「回應對不起來就當未知」寫進 `bilibili/archive.ts`，不再靠「空清單＝沒影片」這種默認。

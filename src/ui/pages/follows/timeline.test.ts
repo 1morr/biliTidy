@@ -19,12 +19,12 @@ function row(pubdate: number | null | 'unknown'): FollowRow {
     verify: '',
   };
   if (pubdate === 'unknown')
-    return { entry, status: 'pending', activity: { mid: 1, status: 'unknown', checkedAt: 0, schema: 1 } };
-  if (pubdate === null) return { entry, status: 'pending', activity: { mid: 1, status: 'noVideos', checkedAt: 0, schema: 1 } };
+    return { entry, status: 'pending', activity: { mid: 1, status: 'unknown', checkedAt: 0, schema: 2 } };
+  if (pubdate === null) return { entry, status: 'pending', activity: { mid: 1, status: 'noVideos', checkedAt: 0, schema: 2 } };
   return {
     entry,
     status: 'pending',
-    activity: { mid: 1, status: 'videos', latest: { bvid: 'BV1', title: 't', pubdate }, checkedAt: 0, schema: 1 },
+    activity: { mid: 1, status: 'videos', latest: { bvid: 'BV1', title: 't', pubdate }, checkedAt: 0, schema: 2 },
   };
 }
 

@@ -796,6 +796,7 @@ export const en = {
       notJson: 'The response was not valid JSON',
       wbiOrRiskCheckFailed: 'WBI signature or rate-limit check failed (v_voucher)',
       navMissingWbi: 'The nav response is missing wbi_img',
+      archiveListEmpty: "Bilibili reported uploads for this account but returned none — can't tell when the latest one was",
       noBiliJctCookie: "Couldn't find the bili_jct cookie — please sign in to Bilibili first",
     },
     network: {
