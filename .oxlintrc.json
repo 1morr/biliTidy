@@ -10,7 +10,8 @@
     "suspicious": "error",
     "perf": "warn"
   },
-  "ignorePatterns": [".output", ".wxt", "node_modules"],
+  // docs/reviews 是審查報告的附件（走查腳本與輸出），不是專案原始碼——它們的存在不該讓 lint 變紅
+  "ignorePatterns": [".output", ".wxt", "node_modules", "docs/reviews"],
   "rules": {
     // 全案的讀寫刻意序列化過節流器（design.md 6.4／8.3）：平行化正是要避免的事，不是漏改。
     "no-await-in-loop": "off",

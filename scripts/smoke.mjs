@@ -4,6 +4,11 @@
 //   SMOKE_CHANNEL=chrome  改用系統 Chrome（Chrome 137+ 品牌版已不支援 --load-extension，預設用 Playwright 的 Chromium）
 //   SMOKE_KEEP=1          測試後不關閉瀏覽器；可在視窗裡登入 B 站，profile 存於 .smoke-profile/ 供下次重用
 //   SMOKE_SKIP_FLOW=1     即使已登入也不跑分類流程
+//
+// 選擇器的規矩：**能用結構就不要用文字**。這支腳本曾經先把語言設成繁中、再用約 30 個中文字串當選擇器，
+// 版面重做把章節改名之後整支就死了（而 CI 不跑它，所以沒人發現）。現在章節走 `.chap` 上的編號、
+// 分頁走 `.tabs .tab` 的順序、開關走 `.srow input.switch` 的順序；真的只剩文字可用時才用英文——
+// `src/i18n/en.ts` 是預設語系也是型別來源，`scripts/ui-preview.mjs` 也是同樣的做法。
 import { chromium } from 'playwright';
 import path from 'node:path';
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -47,9 +52,8 @@ try {
   const extId = new URL(sw.url()).host;
   console.log('extension id:', extId);
   // 每次從乾淨的設定開始，讓流程可重複執行（cookie／登入態不受影響）。
-  // 這支腳本用繁中文案找控制項，而介面預設是英文，所以清完 storage 要把語言設回繁中。
+  // 不設語言：預設就是英文，選擇器跟著 src/i18n/en.ts。
   await sw.evaluate(() => chrome.storage.local.clear());
-  await sw.evaluate(() => chrome.storage.local.set({ language: 'zh-Hant' }));
 
   const page = await context.newPage();
   const pageErrors = [];
@@ -58,9 +62,8 @@ try {
     if (m.type() === 'error') pageErrors.push(m.text());
   });
   await page.goto(`chrome-extension://${extId}/app.html`);
-  await page.waitForFunction(() => !(document.querySelector('.session')?.textContent ?? '').includes('檢查登入狀態'), null, {
-    timeout: 20000,
-  });
+  // 「重新檢查」那顆按鈕只在登入狀態查完之後才出現（查詢中是純文字，查失敗是另一顆 .link）
+  await page.waitForSelector('.session .recheck', { timeout: 20000 });
   const session = (await page.textContent('.session'))?.trim() ?? '';
   console.log('session:', session);
   const loggedIn = /mid \d+/.test(session);
@@ -68,39 +71,51 @@ try {
   const rules = await sw.evaluate(() => chrome.declarativeNetRequest.getSessionRules());
   check(rules.length === 1 && rules[0].condition.initiatorDomains?.[0] === extId, 'DNR header rule installed');
 
-  // ---- 設定頁：對 mock AI 做連線測試與視覺測試，儲存後重載仍在 ----
-  // 設定頁一次只顯示一段，所以要測的控制項得先切到它所在的那一段
-  const section = (name) => page.locator('.snav-item', { hasText: name }).click();
+  // 頂列四個分頁的順序（ui/App.tsx 的 pages）與設定頁六章的編號（SettingsPage 的 ORDER）都是介面自己的座標，
+  // 不隨語言改變——章節編號甚至就印在畫面上。
+  const TAB = { run: 0, folders: 1, follows: 2, settings: 3 };
+  const tab = (id) => page.locator('.tabs .tab').nth(TAB[id]).click();
+  const CH = { endpoint: '01', sources: '02', instructions: '03', speed: '04', data: '05', language: '06' };
+  const section = (no) => page.locator(`button.chap:has(.no:text-is("${no}"))`).click();
+  const chapterStatus = (no) => page.locator(`button.chap:has(.no:text-is("${no}")) .st`).textContent();
+  // 02「給 AI 看什麼」的三個資料來源開關（DataSourcesSection 的 sources 陣列順序）
+  const SRC = { detail: 0, subtitle: 1, cover: 2 };
+  const sourceSwitch = (key) => page.locator('.srow input.switch').nth(SRC[key]);
+  const saveButton = () => page.locator('.runbar .btn.primary');
 
-  await page.getByRole('button', { name: '設定', exact: true }).click();
-  await section('連線');
+  // ---- 設定頁：對 mock AI 做連線測試與視覺測試，儲存後重載仍在 ----
+  // 設定頁一次只顯示一章，所以要測的控制項得先切到它所在的那一章
+  await tab('settings');
+  await section(CH.endpoint);
   await page.fill('#baseUrl', `http://127.0.0.1:${MOCK_PORT}/v1`);
   await page.fill('#model', 'mock-model');
-  await page.getByRole('button', { name: '測試連線' }).click();
-  await page.waitForSelector('text=回覆：OK', { timeout: 10000 });
+  await page.getByRole('button', { name: 'Test connection' }).click();
+  await page.waitForSelector('text=Reply: OK', { timeout: 10000 });
   check(true, 'AI 連線測試（mock）');
+  // 「已連線」要測試通過才算數，不可以只看欄位有沒有填
+  check((await chapterStatus(CH.endpoint))?.includes('Connected') === true, '連線測試通過後左軌顯示 Connected');
 
-  // 「測試視覺」會立刻寫進 storage；同一次編輯裡其他段落的改動不該被還原掉，
+  // 「測試視覺」會立刻寫進 storage；同一次編輯裡其他章節的改動不該被還原掉，
   // 所以先改字幕與限速再按，測完一起驗。
-  await page.getByLabel('這個模型看得懂圖片').check();
-  await section('要給 AI 看什麼');
-  await page.getByLabel('抓字幕').check();
-  check(await page.getByLabel('附上封面給模型看').isDisabled(), '確認之前不啟用封面選項');
-  await section('速度與資料');
-  await page.locator('input[name="ratePreset"]').first().check(); // 保守 = 1 req/s
+  await page.locator('.settings-form input.switch').check();
+  await section(CH.sources);
+  await sourceSwitch('subtitle').check();
+  check(await sourceSwitch('cover').isDisabled(), '確認之前不啟用封面選項');
+  await section(CH.speed);
+  await page.locator('input[name="ratePreset"]').first().check();
 
-  await section('連線');
-  await page.getByRole('button', { name: '測試視覺' }).click();
-  await page.waitForSelector('text=模型回覆：粉色圓形', { timeout: 10000 });
+  await section(CH.endpoint);
+  await page.getByRole('button', { name: 'Test vision' }).click();
+  await page.waitForSelector('text=Model reply:', { timeout: 10000 });
   // 「有回覆」不算通過：要使用者確認描述對得上那張圖
-  await page.getByRole('button', { name: '對得上，啟用' }).click();
-  await page.waitForSelector('text=一併儲存', { timeout: 10000 });
+  await page.getByRole('button', { name: 'It matches, enable' }).click();
+  await page.waitForSelector('text=Vision setting saved', { timeout: 10000 });
   check(true, 'AI 視覺測試（mock）');
 
-  await section('要給 AI 看什麼');
-  check(await page.getByLabel('附上封面給模型看').isEnabled(), '視覺驗證後啟用封面選項');
-  check(await page.getByLabel('抓字幕').isChecked(), '測試視覺後字幕設定沒有被還原');
-  await section('速度與資料');
+  await section(CH.sources);
+  check(await sourceSwitch('cover').isEnabled(), '視覺驗證後啟用封面選項');
+  check(await sourceSwitch('subtitle').isChecked(), '測試視覺後字幕設定沒有被還原');
+  await section(CH.speed);
   check(await page.locator('input[name="ratePreset"]').first().isChecked(), '測試視覺後限速設定沒有被還原');
   const afterVision = await sw.evaluate(() => chrome.storage.local.get('settings'));
   check(
@@ -109,65 +124,79 @@ try {
   );
   // 還原成預設值，不影響後面的流程
   await page.locator('input[name="ratePreset"]').nth(1).check();
-  await section('要給 AI 看什麼');
-  await page.getByLabel('抓字幕').uncheck();
+  await section(CH.sources);
+  await sourceSwitch('subtitle').uncheck();
   // 封面預設是開的，關掉才驗得出「儲存後真的持久化」（而且煙霧測試不需要真的抓封面）
-  await page.getByLabel('附上封面給模型看').uncheck();
-  await page.getByRole('button', { name: '儲存設定' }).click();
-  await page.waitForSelector('text=已儲存', { timeout: 5000 });
+  await sourceSwitch('cover').uncheck();
+  await saveButton().click();
+  // 存完 dirty 會清掉、主按鈕跟著變灰——不必比對「已儲存」那句話
+  await page.waitForFunction(() => document.querySelector('.runbar .btn.primary')?.disabled === true, null, { timeout: 5000 });
+  check(true, '儲存設定');
   await page.screenshot({ path: path.join(outDir, 'settings.png'), fullPage: true });
 
   await page.reload();
-  await page.getByRole('button', { name: '設定', exact: true }).click();
+  await tab('settings');
   await page.waitForSelector('#baseUrl');
   check((await page.inputValue('#baseUrl')) === `http://127.0.0.1:${MOCK_PORT}/v1`, '設定重載後持久化');
-  await section('要給 AI 看什麼');
-  check(!(await page.getByLabel('附上封面給模型看').isChecked()), '封面選項持久化');
+  await section(CH.sources);
+  check(!(await sourceSwitch('cover').isChecked()), '封面選項持久化');
+
+  // 不合法的 Base URL 不可以被默默換成別的端點：主按鈕變灰、旁邊寫出規則、storage 原封不動
+  await section(CH.endpoint);
+  await page.fill('#baseUrl', 'http://192.168.1.10:8080/v1');
+  check(await saveButton().isDisabled(), '非法 Base URL 時主按鈕變灰');
+  const why = (await page.locator('.runbar .why').textContent()) ?? '';
+  check(why.includes('Only https://'), `非法 Base URL 時作業列寫出規則：${why.slice(0, 60)}`);
+  const afterBadUrl = await sw.evaluate(() => chrome.storage.local.get('settings'));
+  check(
+    afterBadUrl.settings?.ai?.baseUrl === `http://127.0.0.1:${MOCK_PORT}/v1`,
+    `非法 Base URL 沒有寫進 storage（${afterBadUrl.settings?.ai?.baseUrl}）`,
+  );
+  await page.fill('#baseUrl', `http://127.0.0.1:${MOCK_PORT}/v1`);
 
   // 換模型名稱 → 視覺驗證作廢、封面選項停用
-  await section('連線');
   await page.fill('#model', 'other-model');
-  await section('要給 AI 看什麼');
-  check(await page.getByLabel('附上封面給模型看').isDisabled(), '更換模型後視覺選項停用');
+  await section(CH.sources);
+  check(await sourceSwitch('cover').isDisabled(), '更換模型後視覺選項停用');
 
-  await page.getByRole('button', { name: '整理', exact: true }).click();
+  await tab('run');
 
   // ---- 已登入：跑「分類但不搬移」流程（mock AI 一律回空目標） ----
   if (loggedIn && !process.env.SMOKE_SKIP_FLOW) {
-    await page.waitForSelector('.folder-card', { timeout: 20000 });
-    const cards = await page.$$eval('.folder-card', (els) => els.map((el, i) => ({ i, text: el.textContent ?? '' })));
+    await page.waitForSelector('.src-row', { timeout: 20000 });
+    const rows = await page.$$eval('.src-row', (els) =>
+      els.map((el, i) => ({
+        i,
+        title: el.querySelector('.src-name')?.textContent ?? '',
+        n: Number(el.querySelector('.src-n')?.textContent ?? 0),
+      })),
+    );
     // 選影片數最少（但 > 0）的收藏夾當來源，控制請求量
-    const parsed = cards
-      .map((c) => ({ ...c, count: Number(/(\d+)\s*支/.exec(c.text)?.[1] ?? 0) }))
-      .filter((c) => c.count > 0)
-      .sort((a, b) => a.count - b.count);
-    const source = parsed[0];
-    check(!!source, `找到來源收藏夾：${source?.text}`);
-    await page.locator('.folder-card').nth(source.i).click();
+    const source = rows.filter((r) => r.n > 0).sort((a, b) => a.n - b.n)[0];
+    check(!!source, `找到來源收藏夾：${source?.title}（${source?.n} 支）`);
+    await page.locator('.src-row').nth(source.i).click();
 
-    // 整理範圍：最近收藏的 20 支
-    await page.getByLabel('最近收藏的').check();
-    await page.locator('section.panel input[type=number]').first().fill('20');
-    const estimate = (await page.locator('section.panel', { hasText: 'AI 分類' }).first().textContent()) ?? '';
-    check(/這次處理\s*\d+\s*支/.test(estimate), `顯示預估請求量：${estimate.replace(/\s+/g, ' ').slice(0, 80)}`);
+    // 整理範圍：最近收藏的 20 支（BatchPanel 的第二個 scope radio）
+    await page.locator('input[name="scope"]').nth(1).check();
+    await page.locator('aside.side input[type=number]').first().fill('20');
+    const estimate = (await page.locator('aside.side .read').first().textContent()) ?? '';
+    check(/\b20\b/.test(estimate), `顯示預估請求量：${estimate.replace(/\s+/g, ' ').slice(0, 80)}`);
 
     // 描述的匯入、編輯與 AI 生成都在「收藏夾」分頁
-    await page.getByRole('button', { name: '收藏夾', exact: true }).click();
-    await page.getByRole('button', { name: '全選' }).click();
-    await page.getByRole('button', { name: /^從 B 站簡介匯入/ }).click();
-    await page.waitForSelector('.banner:has-text("匯入")', { timeout: 10000 });
-    await page.getByRole('button', { name: '全部採用' }).click();
+    await tab('folders');
+    await page.getByRole('button', { name: 'Select all' }).click();
+    await page.getByRole('button', { name: /^Import from Bilibili/ }).click();
+    await page.getByRole('button', { name: 'Accept all' }).click();
     check(true, '從 B 站簡介匯入描述並採用');
-    await page.getByRole('button', { name: '整理', exact: true }).click();
+    await tab('run');
 
-    const firstTarget = page.locator('table.grid input[type=checkbox]').first();
-    await firstTarget.check();
-    await page.getByRole('button', { name: '開始分類' }).click();
-    await page.waitForSelector('text=審核與執行', { timeout: 15 * 60 * 1000 });
+    await page.locator('table.grid tbody input[type=checkbox]').first().check();
+    await page.getByRole('button', { name: 'Start classification' }).click();
+    await page.waitForSelector('text=Review & execute', { timeout: 15 * 60 * 1000 });
     const rowCount = await page.locator('table.grid tbody tr').count();
     check(rowCount > 0, `分類完成，審核表 ${rowCount} 列`);
-    const pending = await page.getByRole('button', { name: /執行搬移/ }).textContent();
-    check(/（0 支）/.test(pending ?? ''), `mock 回空目標 → 待搬移 0 支（${pending}）`);
+    const pending = (await page.getByRole('button', { name: /^Move \d/ }).textContent()) ?? '';
+    check(/^Move 0 /.test(pending), `mock 回空目標 → 待搬移 0 支（${pending}）`);
     await page.screenshot({ path: path.join(outDir, 'review.png'), fullPage: true });
   } else {
     console.log(

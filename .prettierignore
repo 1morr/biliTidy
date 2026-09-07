@@ -14,3 +14,6 @@ package-lock.json
 
 # 設計畫布的原始檔（Design Components 的 .dc.html，重排會動到 <pre> 裡的空白）
 design
+
+# 審查報告的附件：走查腳本與輸出是當時跑出來的樣子，不重排
+docs/reviews
