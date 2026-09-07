@@ -783,6 +783,12 @@ select:focus {
   border-color: var(--ac);
 }
 
+/* 填的值不合法：紅框，而且蓋過 .frow.dirty 的粉框——「改過還沒存」這時候是次要的 */
+input[aria-invalid='true'],
+.frow.dirty .fc input[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+
 input:disabled,
 textarea:disabled,
 select:disabled {

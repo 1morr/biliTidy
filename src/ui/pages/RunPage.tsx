@@ -40,7 +40,15 @@ const BUSY_PHASES: JobPhase[] = ['fetchingList', 'fetchingDetail', 'fetchingCove
  * 底下那條作業列永遠是同一件事：你正要執行的批次，以及執行它的按鈕；
  * 按鈕變灰時旁邊一定寫得出原因。
  */
-export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: () => void }) {
+export function RunPage({
+  mid,
+  onOpenFolders,
+  onOpenSettings,
+}: {
+  mid: number;
+  onOpenFolders: () => void;
+  onOpenSettings: () => void;
+}) {
   const m = useMessages();
   const folders = useAppStore((s) => s.folders);
   const sourceId = useAppStore((s) => s.sourceId);
@@ -77,8 +85,8 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
   const busy = BUSY_PHASES.includes(job.phase);
   const wentBackground = useWentBackground(busy);
   const now = useNow(busy);
-  const aiReady = planOf(settings).aiReady;
-  const canStart = !!source && targets.length > 0 && aiReady && !busy && !blocked;
+  const { aiReady, needsApiKey } = planOf(settings);
+  const canStart = !!source && targets.length > 0 && aiReady && !needsApiKey && !busy && !blocked;
 
   const counts = countRows(job.rows);
   const undoRows = job.rows.filter((r) => r.status === 'done' && r.chosen.length > 0);
@@ -116,7 +124,9 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
       ...(limit ? { limit } : {}),
     });
 
-  const reviewing = (job.phase === 'review' || job.phase === 'moving' || job.phase === 'done') && job.rows.length > 0;
+  // 'error' 也算：寫入到一半失敗時列還在，不可以把審核表丟掉換回準備畫面
+  const reviewing =
+    (job.phase === 'review' || job.phase === 'moving' || job.phase === 'done' || job.phase === 'error') && job.rows.length > 0;
   const phaseLabel = phaseLabelOf(m, job.phase);
 
   // ── 分類中／搬移中 ──────────────────────────────────────────────
@@ -213,6 +223,8 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
           </button>
           {blocked ? (
             <span className="why">{m.app.busyWithFollows}</span>
+          ) : job.phase === 'error' ? (
+            <span className="why">{m.run.whyRunStopped}</span>
           ) : job.phase === 'done' ? (
             <span className="why">{m.run.whyRunFinished}</span>
           ) : job.phase === 'review' && counts.move + counts.copy === 0 ? (
@@ -351,6 +363,19 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
           </div>
 
           <div className="c-body">
+            {/* 失敗在產生審核列之前（沒填金鑰、端點 401、AI 回傳解析不了…）就只剩這裡說得出原因：
+                錯誤已經存在 job.error 裡，之前只畫在審核畫面，而那個畫面正好進不去。 */}
+            {job.error && (
+              <div className="c-pad" style={{ paddingBottom: 0 }}>
+                <div className="banner error">
+                  <span className="dot" style={{ background: 'var(--bad)' }} />
+                  <span>{m.run.runFailedBanner(job.error)}</span>
+                  <button type="button" className="link spacer" onClick={onOpenSettings}>
+                    {m.run.openSettings}
+                  </button>
+                </div>
+              </div>
+            )}
             {reviewing && (
               <div className="c-pad" style={{ paddingBottom: 0 }}>
                 <div className="banner">
@@ -422,9 +447,11 @@ export function RunPage({ mid, onOpenFolders }: { mid: number; onOpenFolders: ()
               : !source
                 ? m.run.pickSourceFirst
                 : !aiReady
-                  ? m.run.fillAiEndpointFirst
-                  : m.run.noTargetsSelected}
-            {!blocked && source && aiReady && targets.length === 0 && (
+                  ? m.common.fillAiEndpointFirst
+                  : needsApiKey
+                    ? m.common.fillApiKeyFirst
+                    : m.run.noTargetsSelected}
+            {!blocked && source && aiReady && !needsApiKey && targets.length === 0 && (
               <button
                 type="button"
                 className="link"

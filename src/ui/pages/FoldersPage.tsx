@@ -50,7 +50,10 @@ export function FoldersPage({ mid }: { mid: number }) {
 
   const chosen = folders.filter((f) => picked.includes(f.id));
   const draftIds = Object.keys(drafts);
-  const aiReady = planOf(settings).aiReady;
+  const { aiReady, needsApiKey } = planOf(settings);
+  // AI 生成描述叫得動嗎；叫不動時作業列要寫得出是哪一項還沒填
+  const aiBlocked = !aiReady || needsApiKey;
+  const aiWhy = !aiReady ? m.common.fillAiEndpointFirst : needsApiKey ? m.common.fillApiKeyFirst : null;
   const busy = running !== null;
 
   const descOf = (f: FolderMeta) => (descriptions[String(f.id)] ?? '').trim();
@@ -369,7 +372,12 @@ export function FoldersPage({ mid }: { mid: number }) {
                             />
                             <div className="fmeta">
                               <span className="mono">{m.folders.charCount(current.length)}</span>
-                              <button type="button" className="link" disabled={busy || !aiReady} onClick={() => void generate(f)}>
+                              <button
+                                type="button"
+                                className="link"
+                                disabled={busy || aiBlocked}
+                                onClick={() => void generate(f)}
+                              >
                                 {now ? m.folders.generating : m.folders.generateWithAi}
                               </button>
                               {usesBiliIntro(f) && <span className="tag info">{m.folders.usesBiliIntroTag}</span>}
@@ -502,7 +510,7 @@ export function FoldersPage({ mid }: { mid: number }) {
               {m.folders.selectedFoldersSuffix(chosen.length)}
             </span>
             <span className="sep" />
-            <button type="button" className="btn primary" disabled={!aiReady} onClick={() => void generateChosen()}>
+            <button type="button" className="btn primary" disabled={aiBlocked} onClick={() => void generateChosen()}>
               <IconSparkle />
               {m.folders.generateDescriptions}
             </button>
@@ -517,7 +525,7 @@ export function FoldersPage({ mid }: { mid: number }) {
             <button type="button" className="btn" onClick={() => void syncToBili()}>
               {m.folders.syncToBili}
             </button>
-            <span className="why spacer">{m.folders.footerWhy}</span>
+            <span className="why spacer">{aiWhy ?? m.folders.footerWhy}</span>
           </>
         ) : (
           <span className="why">{m.folders.footerEmpty}</span>

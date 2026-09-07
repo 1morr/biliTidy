@@ -46,8 +46,10 @@ four pages: **Organise**, **Folders**, **Follows**, **Settings**.
 ### Sort favourites into folders
 
 1. **Settings → 01 AI endpoint** — fill in Base URL, API Key and Model of any
-   OpenAI-compatible endpoint, press "Test connection". Saving asks for
-   permission to that one origin. (Settings are grouped by who uses them:
+   OpenAI-compatible endpoint, press "Test connection". Only `https://` addresses
+   are accepted, plus `http://localhost` and `http://127.0.0.1` for a local model;
+   anything else is refused rather than quietly swapped for another endpoint.
+   Saving asks for permission to that one origin. (Settings are grouped by who uses them:
    chapters 01–03 only matter for organising favourites, 04–06 are shared;
    the follow clean-up never needs an AI endpoint.)
 2. **Folders** — write one sentence per folder describing what belongs in it.

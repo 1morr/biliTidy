@@ -1,5 +1,5 @@
 import type { Settings } from '@/shared/types';
-import { attachesCover, isVisionActive } from './settings';
+import { attachesCover, isLocalEndpoint, isVisionActive } from './settings';
 
 /**
  * 一份設定實際會怎麼跑：抓不抓詳情／字幕／封面、一批送幾支、AI 叫不叫得動。
@@ -24,17 +24,25 @@ export interface RunPlan {
   batchSize: number;
   /** 端點與模型都填了才叫得動 AI */
   aiReady: boolean;
+  /**
+   * 端點需要金鑰但沒填。遠端端點少了 `Authorization` 就是一個 401，
+   * 而那個失敗要等整批影片都讀完才會發生——所以在按下去之前就擋。
+   * 本機模型（localhost／127.0.0.1）多半不收金鑰，那種端點不擋。
+   */
+  needsApiKey: boolean;
 }
 
 export function planOf(settings: Settings): RunPlan {
   const withDetail = settings.features.fetchDetail;
   const withCover = attachesCover(settings);
+  const baseUrl = settings.ai.baseUrl.trim();
   return {
     visionActive: isVisionActive(settings),
     withDetail,
     withSubtitle: withDetail && settings.features.fetchSubtitle,
     withCover,
     batchSize: Math.max(1, withCover ? settings.ai.batchSizeVision : settings.ai.batchSizeText),
-    aiReady: settings.ai.baseUrl.trim() !== '' && settings.ai.model.trim() !== '',
+    aiReady: baseUrl !== '' && settings.ai.model.trim() !== '',
+    needsApiKey: baseUrl !== '' && settings.ai.apiKey.trim() === '' && !isLocalEndpoint(baseUrl),
   };
 }

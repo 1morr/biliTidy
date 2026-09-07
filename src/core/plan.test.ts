@@ -59,4 +59,16 @@ describe('planOf', () => {
     expect(planOf(withAi({ baseUrl: '  ' })).aiReady).toBe(false);
     expect(planOf(withAi({ model: '' })).aiReady).toBe(false);
   });
+
+  it('needsApiKey：遠端端點沒填金鑰才算，本機模型不算', () => {
+    // 預設就是這個狀況：端點與模型有值（schema 預設），金鑰空的——「叫得動」但一定拿到 401
+    expect(planOf(DEFAULT_SETTINGS).needsApiKey).toBe(true);
+    expect(planOf(withAi({ apiKey: 'sk-x' })).needsApiKey).toBe(false);
+    expect(planOf(withAi({ apiKey: '   ' })).needsApiKey).toBe(true);
+    // 本機模型（ollama／LM Studio）多半不收金鑰，不可以因此擋住整理
+    expect(planOf(withAi({ baseUrl: 'http://localhost:11434/v1' })).needsApiKey).toBe(false);
+    expect(planOf(withAi({ baseUrl: 'http://127.0.0.1:1234/v1' })).needsApiKey).toBe(false);
+    // 還沒填端點的時候由 aiReady 負責說明，不要同時跳兩句話
+    expect(planOf(withAi({ baseUrl: '' })).needsApiKey).toBe(false);
+  });
 });

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { activityStats, cacheStats } from '@/core/cache';
 import { planOf } from '@/core/plan';
-import { normalizeSettings } from '@/core/settings';
+import { isAllowedBaseUrl, normalizeSettings } from '@/core/settings';
 import { LANGUAGES } from '@/i18n';
 import { toAppError } from '@/shared/result';
 import type { Settings } from '@/shared/types';
@@ -50,6 +50,7 @@ function changedFields(draft: Settings, saved: Settings): Record<SectionId, numb
       differs(a.baseUrl, b.baseUrl) +
       differs(a.apiKey, b.apiKey) +
       differs(a.model, b.model) +
+      differs(a.connectionVerifiedAt, b.connectionVerifiedAt) +
       differs(a.visionSupported, b.visionSupported) +
       differs(a.visionVerifiedAt, b.visionVerifiedAt) +
       differs(a.temperature, b.temperature) +
@@ -112,6 +113,9 @@ export function SettingsPage({ onOpenFollows }: { onOpenFollows: () => void }) {
   // 走與整理流程同一支判斷，設定頁不自己重算（曾經兩邊的定義各自演化過）
   const plan = planOf(draft);
   const { visionActive, withCover: coverActive } = plan;
+  // 填了但不合法：不合法的端點寧可不存，也不要在 schema 裡默默換成另一個服務（金鑰還留著）
+  const baseUrlInvalid = draft.ai.baseUrl.trim() !== '' && !isAllowedBaseUrl(draft.ai.baseUrl);
+  const connectionVerified = draft.ai.connectionVerifiedAt !== undefined;
   const extraBodyInvalid = (() => {
     const text = draft.ai.extraBody?.trim();
     if (!text) return false;
@@ -129,15 +133,27 @@ export function SettingsPage({ onOpenFollows }: { onOpenFollows: () => void }) {
     .map((id) => `${chapterNo(id)} ${m.settings.sections[id].title}`)
     .join(', ');
 
+  /**
+   * 存不下去就什麼都不存。以前這裡拿到權限錯誤只是記一句話，然後照樣寫進去——
+   * 於是一個 `http://192.168.1.10:8080/v1` 會被 schema 換成 api.openai.com，
+   * 使用者填的金鑰原封不動地配上另一個服務，下一次分類就真的送出去了。
+   */
   async function save() {
     setSaveNote(null);
+    if (baseUrlInvalid) {
+      setSaveNote(m.connection.baseUrl.invalid);
+      return;
+    }
     if (draft.ai.baseUrl.trim()) {
       const r = await ensureEndpointPermission(draft.ai.baseUrl);
-      if (!r.ok) setSaveNote(r.error ?? m.settings.unauthorizedEndpoint);
+      if (!r.ok) {
+        setSaveNote(r.error ?? m.settings.unauthorizedEndpoint);
+        return;
+      }
     }
     await updateSettings(() => draft);
     setDirty(false);
-    setSaveNote((n) => n ?? m.settings.saved);
+    setSaveNote(m.settings.saved);
   }
 
   /**
@@ -202,12 +218,14 @@ export function SettingsPage({ onOpenFollows }: { onOpenFollows: () => void }) {
   const preset = ratePresetOf(draft.rate);
   const presetLabel = preset === 'custom' ? m.speedData.custom : m.speedData.ratePresets[preset].label;
   const status: Record<SectionId, React.ReactNode> = {
+    // 「已連線」只在測試連線通過之後才成立；兩個欄位非空只代表填了，不代表連得上
     endpoint: plan.aiReady ? (
       <>
-        <span className="dot" style={{ background: 'var(--ok)' }} />
-        <span>{m.settings.nav.connected}</span>
+        <span className="dot" style={{ background: connectionVerified ? 'var(--ok)' : 'var(--info)' }} />
+        <span>{connectionVerified ? m.settings.nav.connected : m.settings.nav.endpointSet}</span>
         <span>·</span>
         <span className="ellipsis mono">{draft.ai.model}</span>
+        {plan.needsApiKey && <span className="tag warn">{m.settings.nav.noApiKey}</span>}
         {visionActive && <span className="tag ok">{m.settings.nav.visionVerified}</span>}
       </>
     ) : (
@@ -326,6 +344,7 @@ export function SettingsPage({ onOpenFollows }: { onOpenFollows: () => void }) {
               saved={saved}
               setAi={setAi}
               visionActive={visionActive}
+              baseUrlInvalid={baseUrlInvalid}
               extraBodyInvalid={extraBodyInvalid}
               persistVision={persistVision}
               onPermissionNote={setSaveNote}
@@ -351,11 +370,18 @@ export function SettingsPage({ onOpenFollows }: { onOpenFollows: () => void }) {
       </div>
 
       <footer className="runbar">
-        <button type="button" className="btn primary" disabled={!dirty || changedTotal === 0} onClick={() => void save()}>
+        <button
+          type="button"
+          className="btn primary"
+          disabled={!dirty || changedTotal === 0 || baseUrlInvalid}
+          onClick={() => void save()}
+        >
           {changedTotal > 0 ? m.settings.saveN(changedTotal) : m.settings.save}
         </button>
         <span className="why">
-          {saveNote ?? (changedTotal > 0 ? m.settings.unsavedIn(changedNames) : m.settings.nothingToSave)}
+          {baseUrlInvalid
+            ? m.connection.baseUrl.invalid
+            : (saveNote ?? (changedTotal > 0 ? m.settings.unsavedIn(changedNames) : m.settings.nothingToSave))}
         </span>
         <div className="chapters">
           <div className="segs">

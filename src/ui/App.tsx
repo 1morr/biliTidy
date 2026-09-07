@@ -73,7 +73,7 @@ export function App() {
         {page === 'settings' && hydrated ? (
           <SettingsPage onOpenFollows={() => setPage('follows')} />
         ) : page === 'run' && ready ? (
-          <RunPage mid={mid} onOpenFolders={() => setPage('folders')} />
+          <RunPage mid={mid} onOpenFolders={() => setPage('folders')} onOpenSettings={() => setPage('settings')} />
         ) : page === 'folders' && ready ? (
           <FoldersPage mid={mid} />
         ) : page === 'follows' && ready ? (

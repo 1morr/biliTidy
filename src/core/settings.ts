@@ -27,24 +27,48 @@ const optional = <T extends z.ZodType>(schema: T) => schema.optional().catch(und
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
 
 /**
- * 只允許 https，或本機模型（ollama／LM Studio）常見的 http://localhost、http://127.0.0.1。
+ * 本機模型（ollama／LM Studio）的端點。這種端點通常不需要 API Key，
+ * 所以「沒填金鑰」的提醒只對遠端端點成立——那個判斷只准從這裡來。
+ */
+export function isLocalEndpoint(value: string): boolean {
+  try {
+    const u = new URL(value);
+    return u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 只允許 https，或本機模型常見的 http://localhost、http://127.0.0.1。
  * `optional_host_permissions`（`wxt.config.ts`）也只開到這三種，兩邊要保持一致——開放任意 http
  * 網域的話，使用者填一個 http:// 的 base URL 就會讓 `Authorization: Bearer <key>` 明文送出去。
+ * 設定頁用同一支做即時驗證：不合法就不讓存，而不是存完再默默換掉。
  */
-function isAllowedBaseUrl(value: string): boolean {
+export function isAllowedBaseUrl(value: string): boolean {
   try {
     const u = new URL(value);
     if (u.protocol === 'https:') return true;
-    return u.protocol === 'http:' && (u.hostname === 'localhost' || u.hostname === '127.0.0.1');
+    return u.protocol === 'http:' && isLocalEndpoint(value);
   } catch {
     return false;
   }
 }
 
 const aiSchema = z.object({
-  baseUrl: fallback(z.string().refine(isAllowedBaseUrl).default(DEFAULT_BASE_URL), DEFAULT_BASE_URL),
+  /**
+   * 沒填過（undefined）給預設端點，但**填壞了退回空字串**，不是退回預設端點：
+   * 後者會把想跑區網模型的人默默接到 api.openai.com，而他們填的金鑰還留著，
+   * 下一次分類就真的把金鑰送出去了。空字串會讓 `aiReady` 是 false，UI 直接說「還沒填端點」。
+   */
+  baseUrl: fallback(z.string().refine(isAllowedBaseUrl).default(DEFAULT_BASE_URL), ''),
   apiKey: fallback(z.string().default(''), ''),
   model: fallback(z.string().default('gpt-4o-mini'), 'gpt-4o-mini'),
+  /**
+   * 「測試連線」通過的時間。有它才算真的連過線——端點與模型非空只代表欄位填了，
+   * 拿它當「已連線」講會讓全新安裝一打開就顯示綠燈。改動端點／金鑰／模型時清掉。
+   */
+  connectionVerifiedAt: optional(z.number()),
   visionSupported: fallback(z.boolean().default(false), false),
   visionVerifiedAt: optional(z.number()),
   attachCover: fallback(z.boolean().default(true), true),

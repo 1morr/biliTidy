@@ -4,6 +4,8 @@ export interface AiSettings {
   baseUrl: string;
   apiKey: string;
   model: string;
+  /** 「測試連線」通過的時間；undefined = 沒連過線，設定頁只說「端點已填」而不是「已連線」 */
+  connectionVerifiedAt?: number;
   /** 使用者手動勾選「模型支援視覺」 */
   visionSupported: boolean;
   /** 「測試」按鈕實際驗證通過的時間；undefined = 未驗證，所有視覺功能停用 */

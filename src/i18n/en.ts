@@ -21,6 +21,9 @@ export const en = {
     reload: 'Reload',
     loading: 'Loading…',
     folderCount: (n: number) => plural(n, 'folder'),
+    // Why an AI button is greyed out — the Organise page and the Folders page say the same thing
+    fillAiEndpointFirst: 'Fill in the AI endpoint and model in Settings first.',
+    fillApiKeyFirst: 'Fill in the API key in Settings first — this endpoint is not a local model, so it needs one.',
   },
 
   // ---- App shell (src/ui/App.tsx) ----
@@ -104,7 +107,6 @@ export const en = {
     scopeLatest: 'Latest',
     videosUnit: (n: number) => plural(n, 'video'),
     pickSourceFirst: 'Pick a source folder on the left first.',
-    fillAiEndpointFirst: 'Fill in the AI endpoint and model in Settings first.',
     noTargetsSelected: "No target folders selected yet — the AI only moves videos into folders you've ticked.",
     selectAllCount: (n: number) => `Select all ${n}`,
     footerBili: (n: number) => `Bilibili ${n}`,
@@ -113,6 +115,10 @@ export const en = {
     nowOrganising: 'Now organising',
     whyNothingToWrite: 'No row is set to move or copy — pick a target on a row, or accept the suggestions.',
     whyRunFinished: 'This run has been written. Undo it here, or clear the results to start again.',
+    whyRunStopped: 'This run stopped with an error — the message is above the table.',
+    // Shown on the prepare screen — usually because the run failed before it produced a single review row
+    runFailedBanner: (message: string) => `This run stopped: ${message}`,
+    openSettings: 'Open Settings',
     allVideos: 'All videos',
     latestSaved: (n: number) => `Latest ${n} saved`,
     progress: 'Progress',
@@ -550,7 +556,10 @@ export const en = {
     defaultLabel: 'Default',
     languageLabel: 'Interface language',
     nav: {
+      // "Connected" is only true after Test connection passed; before that the fields are merely filled in
       connected: 'Connected',
+      endpointSet: 'Endpoint set · not tested',
+      noApiKey: 'No API key',
       visionVerified: 'Vision verified',
       noEndpointOrModel: 'No endpoint or model set',
       tags: { detail: 'Detail', subtitle: 'Subtitle', cover: 'Cover' },
@@ -590,10 +599,12 @@ export const en = {
       label: 'Base URL',
       desc: "The endpoint's root address. Calls {Base URL}/chat/completions — most services need it to end in /v1; a local model can be http://localhost.",
       default: 'https://api.openai.com/v1',
+      invalid:
+        'Only https:// addresses, or http://localhost and http://127.0.0.1 for a local model. Nothing is saved until this is fixed — the address you typed is never swapped for a different service.',
     },
     apiKey: {
       label: 'API Key',
-      desc: 'The key the endpoint gave you. Stored only on this computer; never written into a backup, never sent to Bilibili.',
+      desc: 'The key the endpoint gave you. Stored only on this computer; never written into a backup, never sent to Bilibili. A local model on localhost usually needs no key.',
     },
     model: {
       label: 'Model',

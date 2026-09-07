@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { runTextTest, runVisionTest, type AiTestResult } from '@/ai/vision';
+import { isLocalEndpoint } from '@/core/settings';
 import type { Messages } from '@/i18n';
 import { toAppError } from '@/shared/result';
 import type { Settings } from '@/shared/types';
@@ -25,6 +26,7 @@ export function ConnectionSection({
   saved,
   setAi,
   visionActive,
+  baseUrlInvalid,
   extraBodyInvalid,
   persistVision,
   onPermissionNote,
@@ -34,6 +36,8 @@ export function ConnectionSection({
   saved: Settings;
   setAi: (p: Partial<Settings['ai']>) => void;
   visionActive: boolean;
+  /** 填了但不是 https／本機：欄位標紅，而且整頁存不下去 */
+  baseUrlInvalid: boolean;
   extraBodyInvalid: boolean;
   persistVision: (p: Partial<Settings['ai']>) => Promise<void>;
   onPermissionNote: (message: string) => void;
@@ -52,17 +56,21 @@ export function ConnectionSection({
     return r.ok;
   }
 
+  /** 通過才記下時間戳：左軌的「已連線」只認這個，不認「欄位填了」 */
   async function testText() {
     setTextTest({ status: 'running' });
     if (!(await ensurePermission())) {
       setTextTest({ status: 'fail', message: c.unauthorized });
+      setAi({ connectionVerifiedAt: undefined });
       return;
     }
     try {
       const r = await runTextTest(ai);
       setTextTest({ status: 'ok', message: describe(m, r, 'reply') });
+      setAi({ connectionVerifiedAt: Date.now() });
     } catch (e) {
       setTextTest({ status: 'fail', message: toAppError(e).message });
+      setAi({ connectionVerifiedAt: undefined });
     }
   }
 
@@ -90,7 +98,7 @@ export function ConnectionSection({
     }
   }
 
-  const canTest = !!ai.baseUrl && !!ai.model;
+  const canTest = !!ai.baseUrl && !!ai.model && !baseUrlInvalid;
 
   return (
     <div className="c-body c-pad settings-form">
@@ -105,20 +113,29 @@ export function ConnectionSection({
         <input
           id="baseUrl"
           type="url"
+          aria-invalid={baseUrlInvalid || undefined}
           value={ai.baseUrl}
           placeholder={c.baseUrl.default}
-          onChange={(e) => setAi({ baseUrl: e.target.value, visionVerifiedAt: undefined })}
+          onChange={(e) => setAi({ baseUrl: e.target.value, connectionVerifiedAt: undefined, visionVerifiedAt: undefined })}
         />
+        {baseUrlInvalid && <span className="status-failed">{c.baseUrl.invalid}</span>}
       </SettingRow>
 
-      <SettingRow id="apiKey" label={c.apiKey.label} required desc={c.apiKey.desc} dirty={ai.apiKey !== was.apiKey}>
+      {/* 本機模型多半不收金鑰，所以 required 跟著端點走，而不是永遠標著 */}
+      <SettingRow
+        id="apiKey"
+        label={c.apiKey.label}
+        required={!isLocalEndpoint(ai.baseUrl)}
+        desc={c.apiKey.desc}
+        dirty={ai.apiKey !== was.apiKey}
+      >
         <div className="row tight" style={{ flexWrap: 'nowrap' }}>
           <input
             id="apiKey"
             type={showKey ? 'text' : 'password'}
             value={ai.apiKey}
             style={{ flex: 1 }}
-            onChange={(e) => setAi({ apiKey: e.target.value })}
+            onChange={(e) => setAi({ apiKey: e.target.value, connectionVerifiedAt: undefined })}
           />
           <button type="button" className="link" onClick={() => setShowKey((v) => !v)}>
             {showKey ? c.apiKeyHide : c.apiKeyShow}
@@ -140,7 +157,7 @@ export function ConnectionSection({
           className="mono"
           value={ai.model}
           placeholder={c.model.default}
-          onChange={(e) => setAi({ model: e.target.value, visionVerifiedAt: undefined })}
+          onChange={(e) => setAi({ model: e.target.value, connectionVerifiedAt: undefined, visionVerifiedAt: undefined })}
         />
       </SettingRow>
 

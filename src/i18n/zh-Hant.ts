@@ -19,6 +19,8 @@ export const zhHant: Messages = {
     reload: '重新載入',
     loading: '載入中…',
     folderCount: (n: number) => `${n} 個收藏夾`,
+    fillAiEndpointFirst: '先到「設定」填 AI 端點與模型。',
+    fillApiKeyFirst: '先到「設定」填 API Key——這個端點不是本機模型，需要金鑰。',
   },
 
   app: {
@@ -90,7 +92,6 @@ export const zhHant: Messages = {
     scopeLatest: '最近',
     videosUnit: (n: number) => `${n} 支`,
     pickSourceFirst: '先在左邊選一個來源收藏夾。',
-    fillAiEndpointFirst: '先到「設定」填 AI 端點與模型。',
     noTargetsSelected: '還沒勾選目標收藏夾——AI 只會把影片搬進你勾選的夾子。',
     selectAllCount: (n: number) => `全選 ${n} 個`,
     footerBili: (n: number) => `B 站 ${n}`,
@@ -99,6 +100,9 @@ export const zhHant: Messages = {
     nowOrganising: '正在整理',
     whyNothingToWrite: '沒有任何一列要搬或複製——在列上選一個目標，或採用建議。',
     whyRunFinished: '這一輪已經寫入了。要反悔就在這裡撤銷，要重來就清除結果。',
+    whyRunStopped: '這一輪出錯停下了——原因寫在表格上方。',
+    runFailedBanner: (message: string) => `這一輪停下了：${message}`,
+    openSettings: '打開設定',
     allVideos: '全部影片',
     latestSaved: (n: number) => `最近收藏的 ${n} 支`,
     progress: '進度',
@@ -490,6 +494,8 @@ export const zhHant: Messages = {
     languageLabel: '介面語言',
     nav: {
       connected: '已連線',
+      endpointSet: '端點已填 · 未測試',
+      noApiKey: '未填金鑰',
       visionVerified: '視覺已驗證',
       noEndpointOrModel: '尚未填端點或模型',
       tags: { detail: '詳情', subtitle: '字幕', cover: '封面' },
@@ -525,10 +531,12 @@ export const zhHant: Messages = {
       label: 'Base URL',
       desc: '端點的根網址。會呼叫 {Base URL}/chat/completions，多數服務要以 /v1 結尾；本機模型可以填 http://localhost。',
       default: 'https://api.openai.com/v1',
+      invalid:
+        '只接受 https:// 的網址，本機模型可以用 http://localhost 或 http://127.0.0.1。改好之前不會存檔——不會把你填的網址換成別的服務。',
     },
     apiKey: {
       label: 'API Key',
-      desc: '端點發給你的金鑰。只存在這台電腦，不會進備份檔，也不會送到 B 站。',
+      desc: '端點發給你的金鑰。只存在這台電腦，不會進備份檔，也不會送到 B 站。跑在 localhost 的本機模型通常不用填。',
     },
     model: {
       label: 'Model',

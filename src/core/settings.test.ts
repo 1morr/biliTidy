@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, isVisionActive, normalizeSettings } from './settings';
+import { DEFAULT_SETTINGS, isAllowedBaseUrl, isLocalEndpoint, isVisionActive, normalizeSettings } from './settings';
 
 describe('settings', () => {
   it('預設值', () => {
@@ -52,10 +52,30 @@ describe('settings', () => {
     expect(normalizeSettings({ ai: { baseUrl: 'https://api.deepseek.com/v1' } }).ai.baseUrl).toBe('https://api.deepseek.com/v1');
     expect(normalizeSettings({ ai: { baseUrl: 'http://localhost:11434/v1' } }).ai.baseUrl).toBe('http://localhost:11434/v1');
     expect(normalizeSettings({ ai: { baseUrl: 'http://127.0.0.1:1234/v1' } }).ai.baseUrl).toBe('http://127.0.0.1:1234/v1');
-    // 其他 http:// 主機（含區網 IP）一律退回預設，不可以讓 Authorization: Bearer <key> 明文送出去
-    expect(normalizeSettings({ ai: { baseUrl: 'http://192.168.1.5:1234/v1' } }).ai.baseUrl).toBe(DEFAULT_SETTINGS.ai.baseUrl);
-    expect(normalizeSettings({ ai: { baseUrl: 'http://example.com/v1' } }).ai.baseUrl).toBe(DEFAULT_SETTINGS.ai.baseUrl);
-    expect(normalizeSettings({ ai: { baseUrl: '不是網址' } }).ai.baseUrl).toBe(DEFAULT_SETTINGS.ai.baseUrl);
+    // 其他 http:// 主機（含區網 IP）一律不接受，不可以讓 Authorization: Bearer <key> 明文送出去。
+    // 退回的是空字串而不是預設端點：填壞了要變成「還沒填端點」，不可以默默接到 api.openai.com——
+    // 那會把使用者為自架模型填的金鑰配上另一個服務。
+    expect(normalizeSettings({ ai: { baseUrl: 'http://192.168.1.5:1234/v1' } }).ai.baseUrl).toBe('');
+    expect(normalizeSettings({ ai: { baseUrl: 'http://example.com/v1' } }).ai.baseUrl).toBe('');
+    expect(normalizeSettings({ ai: { baseUrl: '不是網址' } }).ai.baseUrl).toBe('');
+    // 沒填過（欄位不存在）仍然給預設端點：那是「還沒有意見」，不是「填壞了」
+    expect(normalizeSettings({ ai: {} }).ai.baseUrl).toBe(DEFAULT_SETTINGS.ai.baseUrl);
+    // 填壞的那個欄位不可以波及同一段的其他欄位（金鑰要留著，讓使用者知道自己填過）
+    expect(normalizeSettings({ ai: { baseUrl: 'http://example.com/v1', apiKey: 'sk-x' } }).ai.apiKey).toBe('sk-x');
+  });
+
+  it('isAllowedBaseUrl／isLocalEndpoint 是設定頁即時驗證與「要不要金鑰」的同一份判斷', () => {
+    expect(isAllowedBaseUrl('https://api.openai.com/v1')).toBe(true);
+    expect(isAllowedBaseUrl('http://localhost:11434/v1')).toBe(true);
+    expect(isAllowedBaseUrl('http://192.168.1.10:8080/v1')).toBe(false);
+    expect(isAllowedBaseUrl('abc')).toBe(false);
+    expect(isAllowedBaseUrl('')).toBe(false);
+
+    expect(isLocalEndpoint('http://localhost:11434/v1')).toBe(true);
+    expect(isLocalEndpoint('http://127.0.0.1:1234/v1')).toBe(true);
+    expect(isLocalEndpoint('https://localhost/v1')).toBe(true);
+    expect(isLocalEndpoint('https://api.openai.com/v1')).toBe(false);
+    expect(isLocalEndpoint('')).toBe(false);
   });
 
   it('整段不是物件時才退回那一段的預設', () => {

@@ -27,7 +27,8 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 
 | 規則 | 唯一實作 | 誰讀它 |
 | --- | --- | --- |
-| 這份設定實際會怎麼跑（`withDetail`／`withSubtitle`／`withCover`／`batchSize`／`visionActive`／`aiReady`） | `core/plan.ts` 的 `planOf()` | estimate、flow、promptPreview、organizer、quickFav、三個 UI 分頁 |
+| 這份設定實際會怎麼跑（`withDetail`／`withSubtitle`／`withCover`／`batchSize`／`visionActive`／`aiReady`／`needsApiKey`） | `core/plan.ts` 的 `planOf()` | estimate、flow、promptPreview、organizer、quickFav、三個 UI 分頁 |
+| Base URL 收不收（只准 https，或本機的 localhost／127.0.0.1）、算不算本機端點（本機不用金鑰） | `core/settings.ts` 的 `isAllowedBaseUrl()`／`isLocalEndpoint()` | schema 的 `baseUrl`、設定頁的即時驗證與存檔閘門、`planOf` 的 `needsApiKey` |
 | 組 prompt → 退避重試 → 解析 → 換回 media_id | `core/classify.ts` 的 `classify()` | 整理流程、影片頁 |
 | 要不要附封面（全有全無） | `core/settings.ts` 的 `attachesCover()` | 同上 ＋ estimate、flow、promptPreview |
 | 收藏夾描述取哪一份 | `core/folderStore.ts` 的 `effectiveDescription()` | 整理流程、影片頁 |
@@ -140,6 +141,9 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 
 - schema 在 `core/settings.ts`（zod 4：物件預設值用 `.prefault({})`，**每個欄位都要用 `fallback()`／`optional()` 掛 `.catch()`**——一個欄位填壞不可以波及同段其他欄位）。
   四段：`ai`、`rate`（兩種任務共用）、`features`、`follows`（`thresholdDays`、`includeWhispers`）。
+  **`baseUrl` 是例外**：沒填過給預設端點，但**填壞了退回空字串、不是預設端點**——把想跑本機／區網模型的人默默接到
+  `api.openai.com`，而他們填的金鑰還留著，下一次分類就真的送出去（`design.md` 9.3）。
+  設定頁不合法時直接不存（`isAllowedBaseUrl()` 即時驗證＋`save()` 提前 return），不要再加「先存起來再說」的路徑。
 - 固定值（詳情快取 30 天、封面 7 天、活躍度 30 天 `ACTIVITY_TTL_DAYS`、抖動 ±30%、撤銷每批 20 `RESTORE_BATCH_SIZE`）用同檔的常數，**不要再變成設定項**。
 - 設定頁六章分三組，左軌一次只顯示一章：01 AI 端點、02 給 AI 看什麼、03 分類指示（整理收藏 · 需要 AI）；
   04 讀寫速度（三選一＋自己填數值）、05 快取與備份（兩組快取各自清、匯出匯入）、06 語言（兩個工具共用）。
@@ -213,6 +217,10 @@ npm run quickfav-preview   # 影片頁 toast：淺色／深色／挑選器 → .
 npm run smoke                        # 未登入 profile：只驗證設定頁（對本機 mock AI）
 SMOKE_HEADED=1 SMOKE_KEEP=1 npm run smoke   # 顯示視窗且測完不關，可在視窗裡登入 B 站
 ```
+
+兩支 Playwright 腳本（`smoke`／`ui-preview`）都跑**預設的英文語系**，選擇器**能用結構就不要用文字**：
+章節走 `.chap` 上畫出來的編號、分頁走 `.tabs .tab` 的順序、資料來源開關走 `.srow input.switch` 的順序。
+`smoke` 曾經先把語言設成繁中再用約 30 個中文字串當選擇器，版面重做把章節改名之後整支就死了半年（CI 不跑它）。
 
 ### L4 真實帳號手動驗收
 
