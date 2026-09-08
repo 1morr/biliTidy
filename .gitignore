@@ -9,6 +9,11 @@ stats.html
 .quickfav-profile/
 .env
 
+# 審查報告的附件：報告本文與標竿檔案入庫，截圖與走查腳本留在本機
+# （56 張 PNG 約 6.7 MB，每審一次就多幾 MB，而報告本文靠文字就說得清楚）
+docs/reviews/**/shots/
+docs/reviews/**/logs/
+
 # 分類品質實測的暫存資料與工具（含真實帳號資料，不進版控）
 .eval-tmp/
 .claude/

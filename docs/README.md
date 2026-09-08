@@ -7,6 +7,7 @@
 | [how-it-works.md](how-it-works.md) | **按下去之後發生什麼事** | 使用者看得到的行為變了 |
 | [design.md](design.md) | **為什麼這樣做**、B 站與 AI 端點的 API 查證（1–10 整理收藏、11–17 清理關注） | 做了取捨、否決了某個方案、量到 API 的新事實 |
 | [research/](research/) | **實測數據** | 跑了一次量測，不管結論是什麼 |
+| [reviews/](reviews/) | **跑過一次審查發現了什麼**：問題清單、維度分數、標竿對照 | 做了一次完整審查（`/app-review`） |
 | [../CHANGELOG.md](../CHANGELOG.md) | **改了什麼** | 每一次行為變更 |
 | [../PRODUCT.md](../PRODUCT.md) | **這是給誰、做什麼、哪些規則不能動** | 產品定位或不可變規則變了 |
 | [../DESIGN.md](../DESIGN.md) | **長什麼樣子**：token、元件、版面規則 | 視覺系統變了 |
