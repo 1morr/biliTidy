@@ -347,6 +347,16 @@ await page.waitForSelector('.src-row', { timeout: 20000 });
 
 // ══ 收藏夾分頁：描述的編輯、匯入與 AI 生成都在這裡 ══════════════════════════
 await tab('Folders');
+// 一顆都沒勾的作業列：三顆按鈕都在、都是灰的，旁邊寫得出原因（不是整組消失）
+await page.waitForSelector('.runbar .btn.primary[disabled]', { timeout: 20000 });
+const idleButtons = await page
+  .locator('.runbar .btn')
+  .evaluateAll((els) => els.map((el) => `${el.textContent.trim()}${el.disabled ? ' [disabled]' : ''}`));
+console.log('folders runbar with nothing ticked:', idleButtons.join(' | '));
+if (idleButtons.length !== 3 || idleButtons.some((b) => !b.includes('[disabled]'))) {
+  errors.push(`folders runbar with nothing ticked should show 3 disabled buttons, got: ${idleButtons.join(' | ')}`);
+}
+await shot('folders-empty');
 await page.getByRole('button', { name: 'Select all' }).click();
 await page.getByRole('button', { name: /^Import from Bilibili/ }).click();
 await page.getByRole('button', { name: 'Accept all' }).click();

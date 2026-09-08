@@ -479,8 +479,7 @@ export const en = {
     syncToBili: 'Sync descriptions to Bilibili',
     footerWhy:
       "Batches always run one at a time and can be cancelled mid-way; folders with no description are skipped when syncing, so their Bilibili description isn't cleared.",
-    footerEmpty:
-      'Select folders to see what you can do with them: generate descriptions with AI, import from Bilibili descriptions, or sync descriptions back to Bilibili.',
+    footerEmpty: 'Tick folders first — then you can generate, import or sync their descriptions.',
     cancel: 'Cancel',
     // notes
     cancelledNote: (label: string) => `${label} was cancelled.`,

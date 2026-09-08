@@ -55,6 +55,8 @@ export function FoldersPage({ mid }: { mid: number }) {
   const aiBlocked = !aiReady || needsApiKey;
   const aiWhy = !aiReady ? m.common.fillAiEndpointFirst : needsApiKey ? m.common.fillApiKeyFirst : null;
   const busy = running !== null;
+  // 沒勾選時作業列還是要有那三顆按鈕（灰的）＋一句原因，不能整組消失
+  const nothingPicked = chosen.length === 0;
 
   const descOf = (f: FolderMeta) => (descriptions[String(f.id)] ?? '').trim();
   const usesBiliIntro = (f: FolderMeta) => descOf(f) === '' && effectiveDescription(f, descriptions) !== '';
@@ -500,35 +502,43 @@ export function FoldersPage({ mid }: { mid: number }) {
               </button>
             </span>
           </>
-        ) : chosen.length > 0 ? (
+        ) : (
           <>
             <span>
               {m.folders.selectedPrefix}
-              <b className="num" style={{ color: 'var(--ac-2)' }}>
+              <b className="num" style={{ color: nothingPicked ? 'var(--tx3)' : 'var(--ac-2)' }}>
                 {chosen.length}
               </b>
               {m.folders.selectedFoldersSuffix(chosen.length)}
             </span>
             <span className="sep" />
-            <button type="button" className="btn primary" disabled={aiBlocked} onClick={() => void generateChosen()}>
+            <button
+              type="button"
+              className="btn primary"
+              disabled={nothingPicked || aiBlocked}
+              onClick={() => void generateChosen()}
+            >
               <IconSparkle />
               {m.folders.generateDescriptions}
             </button>
             <label className="check">
-              <input type="checkbox" checked={useCurrent} onChange={(e) => setUseCurrent(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={useCurrent}
+                disabled={nothingPicked}
+                onChange={(e) => setUseCurrent(e.target.checked)}
+              />
               {m.folders.useCurrentDescription}
             </label>
             <span className="sep" />
-            <button type="button" className="btn" onClick={importFromBili}>
+            <button type="button" className="btn" disabled={nothingPicked} onClick={importFromBili}>
               {m.folders.importFromBili}
             </button>
-            <button type="button" className="btn" onClick={() => void syncToBili()}>
+            <button type="button" className="btn" disabled={nothingPicked} onClick={() => void syncToBili()}>
               {m.folders.syncToBili}
             </button>
-            <span className="why spacer">{aiWhy ?? m.folders.footerWhy}</span>
+            <span className="why spacer">{nothingPicked ? m.folders.footerEmpty : (aiWhy ?? m.folders.footerWhy)}</span>
           </>
-        ) : (
-          <span className="why">{m.folders.footerEmpty}</span>
         )}
       </footer>
     </div>

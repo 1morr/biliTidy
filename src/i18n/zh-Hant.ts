@@ -421,7 +421,7 @@ export const zhHant: Messages = {
     importFromBili: '從 B 站簡介匯入',
     syncToBili: '把描述同步回 B 站',
     footerWhy: '批次一律串行執行，中途可以取消；沒填描述的夾子會跳過同步（避免清掉 B 站簡介）。',
-    footerEmpty: '勾選收藏夾後，這裡會出現可以一次做完的事：AI 生成描述、從 B 站簡介匯入、把描述同步回 B 站。',
+    footerEmpty: '先勾選收藏夾——然後才能生成、匯入或同步它們的描述。',
     cancel: '取消',
     cancelledNote: (label: string) => `${label}已取消。`,
     someFailedNote: (label: string, failures: string[]) => `${label}：${failures.length} 個失敗。${failures.join('；')}`,
