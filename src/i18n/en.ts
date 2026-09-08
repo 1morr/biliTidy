@@ -991,7 +991,9 @@ export const en = {
       checkRemaining: (n: number) => `Check the remaining ${n.toLocaleString('en-US')} (starts a new run)`,
       thresholdLabel: 'Quiet for more than',
       thresholdUnit: 'days',
-      thresholdHint: 'Counted from the newest upload. Refilters at once; nothing is fetched again.',
+      thresholdRange: '1–3,650',
+      thresholdHint:
+        'Counted from the newest video — articles and posts do not count. Refilters at once; nothing is fetched again.',
       statusTitle: 'Status',
       status: {
         all: 'All accounts',

@@ -893,7 +893,8 @@ export const zhHant: Messages = {
       checkRemaining: (count) => `補查剩下的 ${num(count)} 個（會重新開始一輪）`,
       thresholdLabel: '安靜超過',
       thresholdUnit: '天',
-      thresholdHint: '從最新一支投稿算起；改了立刻重篩，不重新抓。',
+      thresholdRange: '1–3,650',
+      thresholdHint: '從最新一支影片算起（圖文與動態不算）；改了立刻重篩，不重新抓。',
       statusTitle: '狀態',
       status: {
         all: '全部帳號',

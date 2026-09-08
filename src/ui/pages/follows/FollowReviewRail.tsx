@@ -120,6 +120,8 @@ export function FollowReviewRail({
             }}
           />
           <span className="unit">{m.follows.review.thresholdUnit}</span>
+          {/* 收得的範圍常駐寫著：填 9999 會被 onBlur 彈回上一個合法值，不說的話那個數字看起來就是被吃掉了 */}
+          <span className="dim small mono">{m.follows.review.thresholdRange}</span>
         </div>
         <div className="presets">
           {PRESETS.map((p) => (

@@ -558,6 +558,17 @@ await page.waitForTimeout(400);
 await phone('follows-review-mobile', 'table.grid');
 copyFileSync(path.join(out, 'follows-review-mobile.png'), path.join(review, 'mobile.png'));
 
+// 門檻收得的範圍要常駐寫在畫面上：填 9999 會被彈回上一個合法值，不說的話那個數字看起來就是被吃掉了
+const rangeHint = (await page.locator('.threshold .mono').textContent())?.trim() ?? '';
+console.log('threshold range hint:', rangeHint || '(none)');
+if (!/1.*3,?650/.test(rangeHint)) errors.push(`the threshold field should say what it accepts, got "${rangeHint}"`);
+await page.locator('#threshold').fill('9999');
+await page.locator('#threshold').blur();
+await page.waitForTimeout(400);
+const bounced = await page.locator('#threshold').inputValue();
+console.log('threshold after typing 9999:', bounced);
+if (bounced === '9999') errors.push('an out-of-range threshold should bounce back, not be applied');
+
 // 門檻改成 180 → 「安靜超過門檻」的數字要跟著變
 await page.getByRole('button', { name: '180', exact: true }).click();
 await page.waitForTimeout(400);
