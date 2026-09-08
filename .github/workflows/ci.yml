@@ -27,3 +27,61 @@ jobs:
       # Proves the extension still packages; the artifact is what you load
       # unpacked, so a broken build is a broken release.
       - run: npm run build
+
+  # The three Playwright scripts drive the built extension in a real Chromium.
+  # They are the only automation covering the rendered UI, the MV3 service
+  # worker and the settings round-trip. Without them a redesign left
+  # `npm run smoke` broken for months and nobody noticed.
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # A human reads the screenshots. UTC+8 keeps the "days quiet" numbers in
+      # the follow table the same as they are on a local run.
+      TZ: Asia/Taipei
+      # Feed the scripts a signed-out nav response instead of calling Bilibili.
+      # Login state is not what they test, and a rate-limited runner IP would
+      # look like a failure.
+      SMOKE_OFFLINE: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      # Build first: it takes two seconds, so a broken build fails before we
+      # spend a minute downloading a browser.
+      - run: npm run build
+
+      # The scripts pass `channel: 'chromium'`, which resolves to the full
+      # Chrome for Testing build rather than the headless shell — that is what
+      # makes `--load-extension` work headlessly, so `--only-shell` would break
+      # them. `--no-shell` skips the shell we never launch.
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps --no-shell chromium
+      # `--with-deps` brings a Simplified-first CJK fallback; the screenshots
+      # include a Traditional Chinese pass, which deserves the right glyphs.
+      - name: Install a CJK font for the screenshots
+        run: sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+
+      # Each script already exits non-zero on a console error, a page error or
+      # a failed assertion, so they work as tests as they stand. Keep the later
+      # ones running after an earlier failure: one push, all three signals.
+      - name: Smoke test — settings page against a local mock AI
+        run: npm run smoke
+      - name: UI preview — all four pages
+        if: ${{ !cancelled() }}
+        run: npm run ui-preview
+      - name: Quick-favourite preview — video page toasts
+        if: ${{ !cancelled() }}
+        run: npm run quickfav-preview
+
+      - name: Upload screenshots
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ui-screenshots
+          path: .output/ui
+          retention-days: 14
+          if-no-files-found: warn

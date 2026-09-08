@@ -96,4 +96,9 @@
 - 兩份 README 說 `npm run gen-icons` 是「純 Node」，其實它跑 Playwright 的 Chromium；`PRODUCT.md` 把關注端點指到
   `docs/design.md` 3（那是「要給 AI 看什麼」，關注端點在 11）；README 的 CI 與授權 badge 還指著改名前的 repo。
   節號會漏是因為 `CLAUDE.md` 的同步指令只掃 `src docs CLAUDE.md README.md`，剛好掃不到 `PRODUCT.md`——改成掃全 repo。
+- **`npm run lint` 的 warning 不會讓 CI 變紅，而三支 Playwright 驗證腳本一支都不在 CI 上跑。** 後者正是上一版
+  `npm run smoke` 壞了半年沒人發現的原因。現在 lint 帶 `--deny-warnings`（刻意的 SW `console` 改用
+  `// oxlint-disable-next-line` 加原因註明，不是放著），CI 多一個與靜態檢查平行的 job 跑
+  `smoke`／`ui-preview`／`quickfav-preview` 並把截圖上傳成 artifact。`smoke` 原本唯一會連外網的地方是查登入態，
+  在 CI 上改用假的未登入回應，免得 runner 的 IP 被風控看起來像驗證失敗。
 - `npm run lint` 與 `npm run format:check` 不再掃 `docs/reviews/`（審查報告的附件是當時跑出來的樣子，不是專案原始碼）。

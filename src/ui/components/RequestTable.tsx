@@ -25,7 +25,7 @@ export function RequestTable({ estimate, compact = false }: { estimate: Estimate
               {/* 端點名只准在斜線後面斷行，不能把 `created/list` 從字中間切開 */}
               <span className="endpoint">
                 {row.endpoint.split('/').map((part, i, all) => (
-                  <span key={i}>
+                  <span key={all.slice(0, i + 1).join('/')}>
                     {part}
                     {i < all.length - 1 && (
                       <>

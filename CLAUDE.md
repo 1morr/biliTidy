@@ -12,7 +12,7 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 ## 常用指令
 
 - `npm run build` → `.output/chrome-mv3`（`chrome://extensions` → 開發人員模式 → 載入未封裝項目）；`npm run dev` 開發模式
-- `npm run typecheck`、`npm test`（vitest）、`npm run lint`（oxlint，**不是 ESLint**：TypeScript 7 沒有 JS compiler API）、`npm run format`
+- `npm run typecheck`、`npm test`（vitest）、`npm run lint`（oxlint `--deny-warnings`，**不是 ESLint**：TypeScript 7 沒有 JS compiler API。warning 也會讓它失敗——刻意的 `console` 之類要用 `// oxlint-disable-next-line <規則> -- <原因>` 註明，不要放著）、`npm run format`
 - `npm run ui-preview`：攔截 B 站 API 與 AI 端點餵假資料，把四個分頁走一遍——整理／收藏夾／審核／搬移／撤銷、關注的準備／執行中／審核／
   取關／撤銷／停下／查不到、兩種任務互斥、設定三段、繁中、手機寬度——截圖到 `.output/ui/`（不需登入。**UI 改動一律要看截圖**，不要只靠推論）
 - `npm run quickfav-preview`：假影片頁餵給真的 content script，截圖智慧收藏的 toast（淺色／深色／挑選器）
@@ -187,7 +187,7 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 ### L0 靜態
 
 ```bash
-npm run typecheck && npm test && npm run lint   # tsc --noEmit + vitest + oxlint
+npm run typecheck && npm test && npm run lint   # tsc --noEmit + vitest + oxlint（warning 也算失敗）
 npm run format                                  # prettier --write .（format:check 只檢查）
 ```
 
@@ -200,6 +200,10 @@ promptPreview、organizer、plan、classify、cache、activity、followFilter、
 ```bash
 npm run build      # 產出 .output/chrome-mv3；後面幾層都吃這個產物
 ```
+
+**L2 與 L3 在 CI 上會跑**（`.github/workflows/ci.yml` 的 `ui` job，與靜態檢查的 `check` job 平行）：
+三支腳本本來就會在偵測到 console error 或斷言失敗時以非 0 結束，CI 直接當測試用，截圖上傳成 artifact。
+所以**別把斷言拿掉換成截圖了事**——L2 的價值有一半在那些 `errors.push`。
 
 ### L2 UI 截圖（不需登入，最常用）
 

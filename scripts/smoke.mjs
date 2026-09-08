@@ -55,6 +55,28 @@ try {
   // 不設語言：預設就是英文，選擇器跟著 src/i18n/en.ts。
   await sw.evaluate(() => chrome.storage.local.clear());
 
+  // CI 上這支唯一會碰到外網的地方就是 nav（判斷登入態）。Azure 的 IP 被 B 站風控或擋掉時，
+  // 整支會卡在下面那句 waitForSelector 而不是驗證失敗——那不是這支腳本要測的東西。
+  // SMOKE_OFFLINE=1 餵一份未登入的 nav，讓 CI 跟本機未登入時走同一條路（分類流程照樣 SKIP）。
+  if (process.env.SMOKE_OFFLINE) {
+    await context.route('**/x/web-interface/nav*', (route) =>
+      route.fulfill({
+        json: {
+          code: -101,
+          message: '账号未登录',
+          ttl: 1,
+          data: {
+            isLogin: false,
+            wbi_img: {
+              img_url: 'https://i0.hdslb.com/bfs/wbi/7cd084941338484aae1ad9425b84077c.png',
+              sub_url: 'https://i0.hdslb.com/bfs/wbi/4932caff0ff746eab6f01bf08b70ac45.png',
+            },
+          },
+        },
+      }),
+    );
+  }
+
   const page = await context.newPage();
   const pageErrors = [];
   page.on('pageerror', (e) => pageErrors.push(e.message));

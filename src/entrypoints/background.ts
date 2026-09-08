@@ -48,6 +48,7 @@ async function installHeaderRules(): Promise<void> {
     await setHeaderRuleError(null).catch(() => undefined);
   } catch (e) {
     const message = t().errors.headerRuleFailed(toAppError(e).message);
+    // oxlint-disable-next-line no-console -- SW 沒有 UI 可以顯示錯誤，這是唯一看得到的地方（chrome://extensions 的 service worker console）
     console.error('[biliTidy]', message, e);
     await setHeaderRuleError(message).catch(() => undefined);
   }
@@ -119,6 +120,7 @@ async function applyRate(): Promise<void> {
   try {
     applyRateSettings((await loadSettings()).rate);
   } catch (e) {
+    // oxlint-disable-next-line no-console -- SW 沒有 UI 可以顯示錯誤，這是唯一看得到的地方（chrome://extensions 的 service worker console）
     console.error('[biliTidy] could not read the rate settings; the service worker scheduler keeps its default rate', e);
   }
 }
@@ -134,6 +136,7 @@ export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(() => void installHeaderRules());
   browser.runtime.onStartup.addListener(() => void installHeaderRules());
   browser.action.onClicked.addListener(
+    // oxlint-disable-next-line no-console -- SW 沒有 UI 可以顯示錯誤，這是唯一看得到的地方（chrome://extensions 的 service worker console）
     () => void openAppTab().catch((e: unknown) => console.error('[biliTidy] could not open the app tab', e)),
   );
   browser.runtime.onMessage.addListener((message, _sender, sendResponse) => handleQuickFav(message, sendResponse));
