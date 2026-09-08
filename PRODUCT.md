@@ -103,5 +103,7 @@ Chrome MV3 擴充功能：WXT + React 19 + TypeScript，建置鏈與前身相同
 ## Accessibility & Inclusion
 
 - 表格與作業列可完全用鍵盤操作；勾選框是原生 checkbox 換皮。
+- 窄視窗（把分頁縮成半個螢幕並排看 B 站）下，勾選框與圖示按鈕的可點範圍 ≥ 24×24 CSS px，
+  即 WCAG 2.2 AA 的 2.5.8 Target Size (Minimum)。
 - 顏色永遠不是唯一訊號（狀態＝色點＋文字；風控／錯誤有文字說明）。
 - 深色底上的文字與重點色對比 ≥ 4.5:1（沿用前身已驗算的色票）。

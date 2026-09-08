@@ -340,12 +340,40 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('console', (msg) => msg.type() === 'error' && errors.push(msg.text()));
 const shot = (name, opts = {}) => page.screenshot({ path: path.join(out, `${name}.png`), fullPage: false, ...opts });
+// WCAG 2.2 AA 的 2.5.8 Target Size (Minimum)。開關（.switch）是另一種控制項，本來就有 34×20，不算在內
+const MIN_TARGET = 24;
+const checkTargets = async (where) => {
+  const { seen, small } = await page
+    .locator("input[type='checkbox']:not(.switch), input[type='radio'], .session .recheck")
+    .evaluateAll((els, min) => {
+      const boxes = els.map((el) => ({ el, r: el.getBoundingClientRect() })).filter(({ r }) => r.width > 0);
+      return {
+        seen: boxes.length,
+        small: boxes
+          .filter(({ r }) => r.width < min || r.height < min)
+          .map(
+            ({ el, r }) => `${el.tagName.toLowerCase()}.${el.className || '-'} ${Math.round(r.width)}x${Math.round(r.height)}`,
+          ),
+      };
+    }, MIN_TARGET);
+  // 印出量到幾個：斷言沒東西可量的時候會永遠是綠的，那比沒有斷言更糟
+  console.log(`${where}: ${seen} targets measured, ${small.length} below ${MIN_TARGET}px`);
+  if (small.length) errors.push(`${where}: ${small.length} targets below ${MIN_TARGET}px — ${small.slice(0, 4).join(', ')}`);
+  // 開關是設定用的另一張臉，不該被上面那條規則撐大（兩者特異性相同，排除寫錯就會被蓋掉）
+  const switches = await page
+    .locator('input.switch')
+    .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().width)));
+  const wrong = switches.filter((w) => w !== 34);
+  console.log(`${where}: ${switches.length} switches, ${wrong.length} not 34px wide`);
+  if (wrong.length) errors.push(`${where}: ${wrong.length} switches are not 34px wide (${wrong.join(', ')})`);
+};
 const phone = async (name, scrollTo) => {
   await page.setViewportSize(PHONE);
   await page.waitForTimeout(300);
   if (scrollTo) await page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'start' }), scrollTo);
   await page.waitForTimeout(200);
   await shot(name);
+  await checkTargets(name);
   await page.setViewportSize(DESKTOP);
   await page.waitForTimeout(200);
 };
@@ -604,6 +632,7 @@ const chapter = (title) => page.locator('button.chap', { hasText: title }).click
 await chapter('What the AI sees');
 await page.waitForTimeout(200);
 await shot('settings-data', { fullPage: true });
+await phone('settings-data-mobile');
 await chapter('Read & write speed');
 await page.waitForTimeout(200);
 await shot('settings-speed', { fullPage: true });

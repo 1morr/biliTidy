@@ -3225,6 +3225,29 @@ table.grid tr.add-row:hover td {
     flex: 1 1 100%;
     text-align: left;
   }
+
+  /* 6. 可點目標：WCAG 2.2 AA 的 2.5.8 Target Size (Minimum) 是 24×24 CSS px。桌面寬度下
+   *    15px 的勾選框旁邊有整列撐著，把分頁縮成半個螢幕（並排看 B 站是這個工具很自然的用法）
+   *    就撐不住了。開關是「改設定」的另一張臉、本來就有 34×20，特異性相同會被這裡蓋掉，要排除。 */
+  input[type='checkbox']:not(.switch),
+  input[type='radio'] {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* 這個寬度下「重新檢查」只剩一枚圖示 */
+  .session .recheck {
+    min-width: 24px;
+    min-height: 24px;
+    justify-content: center;
+  }
+
+  .runbar button.link,
+  .c-tools button.link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
 }
 
 /* 中等寬度（≤ 1200px）：時間軸欄先讓位給證據欄；門檻仍在左軌改 */
