@@ -9,9 +9,10 @@ export default defineConfig({
     // 應用程式內文才是 `src/i18n/` 那套可切換語系（見 README「Getting started」）。
     description:
       'Tidy your Bilibili: sort favourites into folders with AI you choose, and unfollow accounts that went quiet — review first, undo after',
-    // 目前用得到的 API（declarativeNetRequestWithHostAccess／storage.session 等）都在 114 以後才有；
+    // 目前用得到的 API 裡最晚出現的是 `runtime.getContexts()`（Chrome 116，background.ts 用它找 App 分頁）；
+    // declarativeNetRequestWithHostAccess 與 storage.session 是 114。
     // 沒有這個宣告的話，太舊的 Chrome 照樣裝得上，卻在跑到那些 API 時才當場失敗。
-    minimum_chrome_version: '114',
+    minimum_chrome_version: '116',
     // 沒有 popup：點工具列圖示由 background 開啟 App 分頁（整理收藏／收藏夾／關注／設定四個分頁都在裡面）
     action: { default_title: 'Open biliTidy' },
     // declarativeNetRequestWithHostAccess 而不是 declarativeNetRequest：兩者能力一致（Chrome 文件），

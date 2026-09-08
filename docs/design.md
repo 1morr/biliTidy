@@ -429,6 +429,22 @@ DOM 依實測（2026-08）：`.video-toolbar-left-main` 底下每個功能是一
 | `resource/clean`（一次清掉整夾失效內容） | [2](#2-bilibili-api-查證)、[6.3](#63-失效影片) |
 | 逐夾打 `folder/info` 取簡介與封面 | [2](#2-bilibili-api-查證)（`folder/created/list` 一個請求就有） |
 
+### 9.5 用記下來的 tab id 找 App 分頁
+
+點工具列圖示要「已經開著就聚焦、沒開就新建」，第一版把 `tabs.create()` 回傳的 id 存進 `storage.session`，
+下次用 `tabs.get(id)` 確認分頁還在不在。**這個判斷是錯的**：使用者在 App 分頁裡打開 B 站（很自然——
+表格裡每個帳號與影片都可以點開）之後，那個分頁的 id 還在、`tabs.get()` 照樣成功，於是圖示只是把一個
+B 站分頁叫到前面，**點幾次都開不出 App，而且完全不說為什麼**。
+
+要修就得知道那個分頁現在的網址，而 `Tab.url` 在 MV3 需要 `tabs` 權限或相符的 host permission
+（`chrome-extension://` 不可能出現在 host permission 裡）。加 `tabs` 權限會在安裝時跳出「讀取瀏覽記錄」的警告，
+和本專案刻意選 `declarativeNetRequestWithHostAccess` 的理由（§8）互相牴觸，為了一個單例判斷不值得。
+
+改用 `runtime.getContexts({ contextTypes: ['TAB'] })`：它就是為了回答「本擴充功能現在有哪些 context、在哪個分頁」
+而存在的，**不需要任何權限**（只回報自己的 context），`documentUrl` 直接可比。代價是它要 Chrome 116
+（`minimum_chrome_version` 從 114 提上去；114 與 116 只差三個月，且瀏覽器自動更新）。
+session storage 那份 id 一併刪掉，不留 fallback。
+
 ## 10. 未解決
 
 還沒驗證、還沒決定的事。做到相關區域時順手收掉。

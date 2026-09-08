@@ -42,7 +42,7 @@ Chrome MV3 擴充功能：WXT + React 19 + TypeScript，建置鏈與前身相同
 
 ## Operating Context
 
-- 執行環境：Chrome／Edge 114+，`chrome://extensions` 載入未封裝項目（是否上架商店未決定）。
+- 執行環境：Chrome／Edge 116+，`chrome://extensions` 載入未封裝項目（是否上架商店未決定）。
 - 整個流程在擴充功能自己的分頁跑（App 分頁），service worker 只做 DNR header 規則、開分頁、影片頁「智慧收藏」的單支往返。
 - 資料來源全部是 B 站公開 API（`api.bilibili.com`，由 `declarativeNetRequest` 補 Referer/Origin）與使用者自己填的
   OpenAI 相容端點（只申請那一個 origin 的 optional host permission）。收藏夾端點見 `docs/design.md` 2，關注端點見 `docs/design.md` 11。

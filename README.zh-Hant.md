@@ -6,7 +6,7 @@
 <p>
   <a href="https://github.com/1morr/biliTidy/actions/workflows/ci.yml"><img src="https://github.com/1morr/biliTidy/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/1morr/biliTidy" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/Chrome-114%2B-4285F4" alt="Chrome 114+">
+  <img src="https://img.shields.io/badge/Chrome-116%2B-4285F4" alt="Chrome 116+">
 </p>
 
 [English](README.md) · **繁體中文**
@@ -22,7 +22,7 @@ B 站資料，攤成一張每一列都帶著證據的審核表，讓你勾選、
 
 ## 安裝
 
-需要 Node.js 20+ 與 Chrome 或 Edge 114+。
+需要 Node.js 20+ 與 Chrome 或 Edge 116+。
 
 ```bash
 npm install

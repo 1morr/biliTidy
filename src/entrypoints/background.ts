@@ -1,6 +1,5 @@
 import { defineBackground } from 'wxt/utils/define-background';
 import { browser } from 'wxt/browser';
-import { storage } from 'wxt/utils/storage';
 import { quickFavMessageSchema, type QuickFavResult } from '@/core/messages';
 import { applyFavorite, suggestFavorite } from '@/core/quickFav';
 import { applyRateSettings } from '@/core/scheduler';
@@ -54,23 +53,25 @@ async function installHeaderRules(): Promise<void> {
   }
 }
 
-const appTabItem = storage.defineItem<number | null>('session:appTabId', { fallback: null });
-
-/** App 分頁單例：已開啟就聚焦，否則新建 */
+/**
+ * App 分頁單例：已開啟就聚焦，否則新建。
+ *
+ * 用 `runtime.getContexts()` 現場問「我現在有哪些分頁」，而不是把 tab id 記在 session storage 裡：
+ * 分頁被導去別的網站時 id 還在、`tabs.get()` 也還會成功，於是圖示只會把一個空白分頁叫到前面，
+ * 點幾次都開不出 App 而且完全不說為什麼。`getContexts` 只回報本擴充功能自己的 context，
+ * **不需要任何權限**（改用 `tabs` 權限的話，安裝時會跳出「讀取瀏覽記錄」的警告）。
+ * 分頁網址帶片段（`app.html#/run`，見 `ui/route.ts`），所以用前綴比對，不用 `documentUrls` 的完全相等。
+ */
 async function openAppTab(): Promise<void> {
-  const existingId = await appTabItem.getValue();
-  if (existingId !== null) {
-    try {
-      const tab = await browser.tabs.get(existingId);
-      await browser.tabs.update(existingId, { active: true });
-      if (tab.windowId !== undefined) await browser.windows.update(tab.windowId, { focused: true });
-      return;
-    } catch {
-      // 分頁已被關閉，往下新建
-    }
+  const url = browser.runtime.getURL('/app.html');
+  const contexts = await browser.runtime.getContexts({ contextTypes: ['TAB'] });
+  const open = contexts.find((c) => c.documentUrl?.startsWith(url));
+  if (open) {
+    await browser.tabs.update(open.tabId, { active: true });
+    await browser.windows.update(open.windowId, { focused: true });
+    return;
   }
-  const tab = await browser.tabs.create({ url: browser.runtime.getURL('/app.html') });
-  if (tab.id !== undefined) await appTabItem.setValue(tab.id);
+  await browser.tabs.create({ url });
 }
 
 /**

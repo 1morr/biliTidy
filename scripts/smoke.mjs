@@ -229,6 +229,17 @@ try {
   await page.screenshot({ path: path.join(outDir, 'app.png'), fullPage: true });
   check(pageErrors.length === 0, `無頁面錯誤${pageErrors.length ? `：${pageErrors.join(' | ')}` : ''}`);
 
+  // 工具列圖示的單例判斷（background.ts 的 openAppTab）。放在最後，因為第二條要把分頁導走。
+  // 舊寫法記 tab id 再用 tabs.get 確認，分頁被導去別的網站時照樣成功——圖示於是永遠開不出 App。
+  const appContexts = async () =>
+    (await sw.evaluate(() => chrome.runtime.getContexts({ contextTypes: ['TAB'] }))).filter((c) =>
+      c.documentUrl?.startsWith(`chrome-extension://${extId}/app.html`),
+    );
+  check((await appContexts()).length === 1, 'getContexts 找得到 App 分頁');
+  await page.goto('about:blank');
+  check((await appContexts()).length === 0, '導去別的網址之後就不算 App 分頁了（圖示會開新的）');
+  await page.goto(`chrome-extension://${extId}/app.html`);
+
   if (process.env.SMOKE_KEEP) {
     console.log('SMOKE_KEEP 已設定，瀏覽器保持開啟；關閉視窗即結束。');
     await new Promise((resolve) => context.on('close', resolve));
