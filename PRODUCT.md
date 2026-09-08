@@ -9,7 +9,7 @@ web
 ## Stack
 
 Chrome MV3 擴充功能：WXT + React 19 + TypeScript，建置鏈與前身相同（WXT、oxlint、Prettier、Vitest、Playwright 預覽腳本）。
-本 repo（`biliEnhanceExt`）是 [biliFavOrg](https://github.com/1morr/biliFavOrg) 與
+本 repo（`biliTidy`）是 [biliFavOrg](https://github.com/1morr/biliFavOrg) 與
 [biliFollowCleaner](https://github.com/1morr/biliFollowCleaner) 的合併：以 biliFavOrg 的基礎設施
 （WBI 簽名、封面、字幕、AI client、影片頁 content script）為底，把 biliFollowCleaner 的關注清理整個搬進來。
 兩個前身原地保留、不再發展。
@@ -45,7 +45,7 @@ Chrome MV3 擴充功能：WXT + React 19 + TypeScript，建置鏈與前身相同
 - 執行環境：Chrome／Edge 114+，`chrome://extensions` 載入未封裝項目（是否上架商店未決定）。
 - 整個流程在擴充功能自己的分頁跑（App 分頁），service worker 只做 DNR header 規則、開分頁、影片頁「智慧收藏」的單支往返。
 - 資料來源全部是 B 站公開 API（`api.bilibili.com`，由 `declarativeNetRequest` 補 Referer/Origin）與使用者自己填的
-  OpenAI 相容端點（只申請那一個 origin 的 optional host permission）。收藏夾端點見 `docs/design.md` 2，關注端點見 `docs/design.md` 3。
+  OpenAI 相容端點（只申請那一個 origin 的 optional host permission）。收藏夾端點見 `docs/design.md` 2，關注端點見 `docs/design.md` 11。
 - 風控／錯誤碼共用一套：`-101` 未登入、`-111` csrf、`-352`／`-412`／HTTP 412／`-799` 風控與頻率限制、`-632` 數量限制、
   `22013` 帳號已註銷、`22014` 已關注、`22009` 關注上限、`40061` 用戶不存在。
 - 兩種長任務（整理收藏、清理關注）**一次只跑一個**：共用同一把讀取節流器與 Web Lock；另一個任務進行中時，這邊的主按鈕變灰並寫出原因。

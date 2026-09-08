@@ -4,8 +4,8 @@
 把已經不再投稿的關注取關——每一個改動都先經過審核表，每一批都可以撤銷。
 
 <p>
-  <a href="https://github.com/1morr/biliEnhanceExt/actions/workflows/ci.yml"><img src="https://github.com/1morr/biliEnhanceExt/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/1morr/biliEnhanceExt" alt="License: MIT"></a>
+  <a href="https://github.com/1morr/biliTidy/actions/workflows/ci.yml"><img src="https://github.com/1morr/biliTidy/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/1morr/biliTidy" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/Chrome-114%2B-4285F4" alt="Chrome 114+">
 </p>
 
@@ -106,10 +106,12 @@ npm run build      # 產出 .output/chrome-mv3
 | `npm run dev` | WXT 開發模式（HMR） |
 | `npm run build` / `npm run zip` | 建置 / 打包 |
 | `npm run typecheck` / `npm test` / `npm run lint` | `tsc --noEmit` / vitest / oxlint |
-| `npm run ui-preview` | 對著假的 B 站與 AI 端點把四個頁面走一遍——整輪分類、整輪關注清理、互斥狀態、設定、繁體中文——並截圖每個畫面。不需帳號、不連網。第一次先 `npx playwright install chromium` |
+| `npm run ui-preview` | 對著假的 B 站與 AI 端點把四個頁面走一遍——整輪分類、整輪關注清理、互斥狀態、設定、繁體中文——並截圖每個畫面。不需帳號、不連網。 |
 | `npm run quickfav-preview` | 同樣手法跑影片頁：假影片頁餵給真的 content script，截圖智慧收藏的卡片 |
 | `npm run smoke` | Playwright 載入建置好的擴充功能並走過設定頁 |
-| `npm run gen-icons` | 重新產生 `public/icon/*.png`（純 Node） |
+| `npm run gen-icons` | 由 `icon.svg` 重新產生 `public/icon/*.png`（用 Playwright 內建的 Chromium 轉檔） |
+
+最後四條指令都是跑 Playwright 自帶的 Chromium——第一次用之前先 `npx playwright install chromium`。
 
 `.env.example` 只給手動測試腳本用。**擴充功能本身完全不會讀它**——真正的 Base URL 與 API Key 在設定頁填。
 

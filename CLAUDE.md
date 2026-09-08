@@ -174,7 +174,7 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 | 流程或請求行為（整理） | `estimate.ts`＋`flow.ts`＋`promptPreview.ts`（三個都有測試） |
 | 設定項（新增／改名／改語意） | `migrateLegacy`、`docs/how-it-works.md` 的設定表、README 的設定區塊 |
 | 指令、環境變數、目錄結構、對外介面 | README（兩份）、本檔、`.env.example`、`CHANGELOG.md` |
-| `design.md` 的節號 | `grep -rn "design\.md" src docs CLAUDE.md README.md` 找出所有引用 |
+| `design.md` 的節號 | `grep -rn "design\.md" . --exclude-dir={node_modules,.output,.wxt,.git}` 找出所有引用——**掃全 repo**，舊版只掃 `src docs CLAUDE.md README.md`，於是漏掉 `PRODUCT.md` 與 `.oxlintrc.json` 裡的引用 |
 | 使用者看得到的行為 | `CHANGELOG.md` 的 `[Unreleased]`、`docs/how-it-works.md`，並重跑 `npm run ui-preview` 看截圖 |
 | 做了取捨或否決了某個方案 | `design.md`（整理收藏寫進 9、關注寫進 17） |
 | 視覺 token、元件語法、版面規則 | `DESIGN.md`；兩個前身若還要同步再一起改 |

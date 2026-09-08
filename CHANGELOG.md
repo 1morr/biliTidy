@@ -93,4 +93,7 @@
   現在改成斷言分面已經自己亮了。
 - **「收藏夾」分頁一顆都沒勾的時候，底部作業列一顆按鈕都沒有**，只剩一句話——第一次打開這一頁的人正好處在這個狀態，
   得從那句話裡自己推出「原來要先勾選」。現在三顆按鈕照樣在，全部是灰的，旁邊寫著原因，跟其他三頁一致。
+- 兩份 README 說 `npm run gen-icons` 是「純 Node」，其實它跑 Playwright 的 Chromium；`PRODUCT.md` 把關注端點指到
+  `docs/design.md` 3（那是「要給 AI 看什麼」，關注端點在 11）；README 的 CI 與授權 badge 還指著改名前的 repo。
+  節號會漏是因為 `CLAUDE.md` 的同步指令只掃 `src docs CLAUDE.md README.md`，剛好掃不到 `PRODUCT.md`——改成掃全 repo。
 - `npm run lint` 與 `npm run format:check` 不再掃 `docs/reviews/`（審查報告的附件是當時跑出來的樣子，不是專案原始碼）。

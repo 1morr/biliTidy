@@ -6,8 +6,8 @@ uploading — every change goes through a review table first, and every batch
 can be undone.
 
 <p>
-  <a href="https://github.com/1morr/biliEnhanceExt/actions/workflows/ci.yml"><img src="https://github.com/1morr/biliEnhanceExt/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/1morr/biliEnhanceExt" alt="License: MIT"></a>
+  <a href="https://github.com/1morr/biliTidy/actions/workflows/ci.yml"><img src="https://github.com/1morr/biliTidy/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/1morr/biliTidy" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/Chrome-114%2B-4285F4" alt="Chrome 114+">
 </p>
 
@@ -153,10 +153,12 @@ Everything else stays in this browser; the only Bilibili host it talks to is
 | `npm run dev` | WXT dev mode with HMR |
 | `npm run build` / `npm run zip` | Build / package |
 | `npm run typecheck` / `npm test` / `npm run lint` | `tsc --noEmit` / vitest / oxlint |
-| `npm run ui-preview` | Runs all four pages against mocked Bilibili and AI endpoints — a whole classification, a whole follow clean-up, the mutual-exclusion state, settings, Traditional Chinese — and screenshots every screen. No account, no API key, no network. First time: `npx playwright install chromium` |
+| `npm run ui-preview` | Runs all four pages against mocked Bilibili and AI endpoints — a whole classification, a whole follow clean-up, the mutual-exclusion state, settings, Traditional Chinese — and screenshots every screen. No account, no API key, no network. |
 | `npm run quickfav-preview` | Same trick for the video page: feeds a fake video page to the real content script and screenshots the smart-favourite toasts |
 | `npm run smoke` | Playwright loads the built extension and walks the settings page |
-| `npm run gen-icons` | Regenerates `public/icon/*.png` (pure Node) |
+| `npm run gen-icons` | Regenerates `public/icon/*.png` from `icon.svg` (renders the SVG in Playwright's Chromium) |
+
+The last four commands drive Playwright's own Chromium — run `npx playwright install chromium` once before the first of them.
 
 `.env.example` is only for manual test scripts. **The extension never reads it** —
 the real Base URL and API key are entered in Settings.
