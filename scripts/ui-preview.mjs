@@ -345,8 +345,26 @@ const tab = (name) => page.getByRole('button', { name, exact: true }).click();
 await page.goto(`chrome-extension://${extId}/app.html`);
 await page.waitForSelector('.src-row', { timeout: 20000 });
 
+// ══ 分頁寫進網址：誤按上一頁要退回上一個分頁，不是離開整個工具 ═══════════════
+const hash = () => page.evaluate(() => location.hash);
+const activeTab = () => page.locator('.tab.active').textContent();
+const expectHash = async (want, when) => {
+  const got = await hash();
+  if (got !== want) errors.push(`${when}: expected location.hash ${want}, got ${got || '(empty)'}`);
+};
+await expectHash('#/run', 'on load the hash should be filled in');
+
 // ══ 收藏夾分頁：描述的編輯、匯入與 AI 生成都在這裡 ══════════════════════════
 await tab('Folders');
+await expectHash('#/folders', 'after switching tab');
+await page.goBack();
+await page.waitForSelector('.tab.active[aria-current="page"]', { timeout: 10000 });
+await expectHash('#/run', 'after going back');
+console.log('back from Folders lands on:', (await activeTab()).trim());
+if ((await activeTab()).trim() !== 'Organise') errors.push('going back should return to the previous tab, not leave the app');
+await page.goForward();
+await page.waitForTimeout(200);
+await expectHash('#/folders', 'after going forward');
 // 一顆都沒勾的作業列：三顆按鈕都在、都是灰的，旁邊寫得出原因（不是整組消失）
 await page.waitForSelector('.runbar .btn.primary[disabled]', { timeout: 20000 });
 const idleButtons = await page

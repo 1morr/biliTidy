@@ -44,6 +44,7 @@ Chrome MV3 擴充功能（WXT + TypeScript + React），兩件「先審核、再
 | 三態分類（API 原料 → videos／noVideos／unknown） | `core/activity.ts` 的 `classifyActivity()`＋`bilibili/archive.ts` 的「錯誤一律丟例外」 | `checkActivity` |
 | 取關用哪個 act（悄悄 4、其餘 2）、撤銷要還原哪些分組（含 -10） | `core/unfollow.ts` 的 `unfollowActFor()`／`tagsToRestore()` | 取關與撤銷流程 |
 | 兩種任務一次只跑一個 | `ui/jobGuard.ts` 的 `claimJob()`／`releaseJob()` | 兩個 jobStore 的每個任務函式、兩頁的主按鈕與 `.why` |
+| 分頁與網址片段的對應（`app.html#/follows`） | `ui/route.ts` 的 `pageFromHash()`／`hashOf()` | `App.tsx` 的初始分頁、`popstate`、切分頁的 `go()` |
 | 介面文案（英文預設、繁中可切） | `src/i18n/en.ts` 與 `zh-Hant.ts`（後者型別為 `Messages`，少一個鍵就 typecheck 失敗）；關注的文案在 `follows.*` 命名空間 | 全部 UI、content script、core 的進度文字、錯誤訊息 |
 
 `plan.ts` 是踩過的坑：字幕規則就是各自重算漂走的（影片頁曾經少了「詳情關掉時字幕也不抓」）。

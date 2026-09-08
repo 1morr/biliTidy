@@ -6,18 +6,18 @@ import { FoldersPage } from './pages/FoldersPage';
 import { FollowsPage } from './pages/FollowsPage';
 import { RunPage } from './pages/RunPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
+import { hashOf, type Page, pageFromHash } from './route';
 import { useAppStore } from './store';
-
-type Page = 'run' | 'folders' | 'follows' | 'settings';
 
 /**
  * 外殼只有兩件事：頂列與目前的分頁。四個分頁平行並排：整理收藏、收藏夾、關注、設定。
  * 版面是滿版高度的，每個分頁自己決定「左軌／中央／右欄」怎麼分，以及底部作業列放什麼——
  * 那條列在每個分頁都是同一個意思：你正要執行的批次，以及執行它的按鈕。
  * 分頁切換不會打斷任務：兩個 jobStore 都是模組層級的單例，切走再切回來畫面接得上。
+ * 目前在哪一頁寫在網址片段裡（見 `route.ts`），所以上一頁退回的是上一個分頁，不是離開整個工具。
  */
 export function App() {
-  const [page, setPage] = useState<Page>('run');
+  const [page, setPage] = useState<Page>(() => pageFromHash(location.hash));
   const { state, refresh } = useSession();
   const headerRuleError = useHeaderRuleError();
   const hydrated = useAppStore((s) => s.hydrated);
@@ -34,6 +34,21 @@ export function App() {
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  // 第一次進來把網址補齊（`app.html` → `app.html#/run`），之後只跟著上一頁／下一頁走
+  useEffect(() => {
+    history.replaceState(null, '', hashOf(pageFromHash(location.hash)));
+    const onPop = () => setPage(pageFromHash(location.hash));
+    addEventListener('popstate', onPop);
+    return () => removeEventListener('popstate', onPop);
+  }, []);
+
+  /** 切分頁＝往歷史推一格，這樣誤按上一頁退回的是上一個分頁而不是離開整個工具 */
+  const go = (next: Page) => {
+    if (next === page) return;
+    history.pushState(null, '', hashOf(next));
+    setPage(next);
+  };
 
   const nav = state.status === 'ready' && state.nav.isLogin ? state.nav : null;
   const mid = nav?.mid ?? null;
@@ -54,7 +69,13 @@ export function App() {
         </span>
         <nav className="tabs">
           {pages.map((p) => (
-            <button key={p.id} type="button" className={page === p.id ? 'tab active' : 'tab'} onClick={() => setPage(p.id)}>
+            <button
+              key={p.id}
+              type="button"
+              className={page === p.id ? 'tab active' : 'tab'}
+              aria-current={page === p.id ? 'page' : undefined}
+              onClick={() => go(p.id)}
+            >
               {p.label}
             </button>
           ))}
@@ -71,9 +92,9 @@ export function App() {
         )}
 
         {page === 'settings' && hydrated ? (
-          <SettingsPage onOpenFollows={() => setPage('follows')} />
+          <SettingsPage onOpenFollows={() => go('follows')} />
         ) : page === 'run' && ready ? (
-          <RunPage mid={mid} onOpenFolders={() => setPage('folders')} onOpenSettings={() => setPage('settings')} />
+          <RunPage mid={mid} onOpenFolders={() => go('folders')} onOpenSettings={() => go('settings')} />
         ) : page === 'folders' && ready ? (
           <FoldersPage mid={mid} />
         ) : page === 'follows' && ready ? (
