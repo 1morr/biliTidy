@@ -402,6 +402,14 @@ T1 從 README 到能開始用、T2 把一個塞滿的收藏夾分類進正確的
 - **改法**：確認 `.app` 或 `.app-body` 沒有多餘的 `tabindex="0"`／`tabindex="-1"` 造成的落點；當前分頁按鈕改成
   `aria-current="page"` 而不是 `disabled`，讓它留在 Tab 順序裡。
 - **工作量**：S
+- **2026-09-08 覆查：一半修掉、另一半是誤判。** 分頁按鈕已加上 `aria-current="page"`（F08 那一批）。
+  `<body>` 那一站則不是缺陷：`scripts/ui-preview.mjs` 現在會在審核畫面從第一個分頁按鈕開始按 Tab 走完一整圈
+  （回到起點才停），量到 **42 站、其中恰好 1 站在 body**，位置在作業列最後一顆「Clear results」與頂列
+  「Organise」之間——那是「文件最後一個可聚焦元素之後」的瀏覽器預設落點，任何網頁都有。
+  另外「當前分頁按鈕不在 Tab 順序裡」也不成立：它是普通 `<button>`、沒有 `disabled`，
+  報告量到的「Tab 1 落在 Folders」只是因為焦點本來就停在 Organise 上。
+  全 repo 沒有任何 `tabIndex`，焦點樣式（`styles.css` 的全域 `:focus-visible`）也是完整的。
+  那段走查留著當回歸守門：中間多出任何一站 body 就會讓 `ui-preview` 失敗。
 
 ### F17 · S1 · H · app chunk 552 kB，超過 Vite 警告線且沒有分割
 

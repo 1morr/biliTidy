@@ -456,6 +456,32 @@ await page.waitForTimeout(300);
 await shot('review', { fullPage: true });
 copyFileSync(path.join(out, 'review.png'), path.join(review, 'desktop.png'));
 console.log('mixed button:', await page.getByRole('button', { name: /^Write changes/ }).textContent());
+// 只用鍵盤走一圈：審查報告量到作業列末尾之後焦點會落在 <body>。走一輪印出完整順序，
+// 並斷言一圈裡最多只有一站是 body——那一站是「文件最後一個可聚焦元素之後」的瀏覽器預設落點，
+// 每個網頁都有；多於一站就代表版面裡真的多了一個沒有內容的落點。
+const describeFocus = () =>
+  page.evaluate(() => {
+    const el = document.activeElement;
+    if (!el || el === document.body) return 'BODY';
+    const cls = typeof el.className === 'string' && el.className ? `.${el.className.split(' ')[0]}` : '';
+    const text = (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 22);
+    return `${el.tagName.toLowerCase()}${cls}${text ? `[${text}]` : ''}`;
+  });
+const firstTab = page.locator('.tabs .tab').first();
+await firstTab.focus();
+const start = await describeFocus();
+const walk = [];
+for (let i = 0; i < 150; i++) {
+  await page.keyboard.press('Tab');
+  const at = await describeFocus();
+  walk.push(at);
+  if (at === start) break;
+}
+const bodyStops = walk.filter((w) => w === 'BODY').length;
+console.log(`tab order (${walk.length} stops, ${bodyStops} on body):`, walk.join(' → '));
+if (walk[walk.length - 1] !== start) errors.push(`tabbing never came back to ${start} within 150 stops`);
+if (bodyStops > 1) errors.push(`${bodyStops} focus stops land on <body>; only the end-of-document one is expected`);
+
 await page.getByRole('button', { name: 'What was sent' }).first().click();
 await page.waitForSelector('.dlg', { timeout: 5000 });
 await page.waitForTimeout(200);
