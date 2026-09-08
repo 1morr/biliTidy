@@ -99,6 +99,7 @@ export const zhHant: Messages = {
     footerMinutes: (n: number) => `≈${n} 分`,
     nowOrganising: '正在整理',
     whyNothingToWrite: '沒有任何一列要搬或複製——在列上選一個目標，或採用建議。',
+    wroteBanner: (n: number) => `完成——${n.toLocaleString('zh-Hant')} 支影片寫進你挑的收藏夾。`,
     whyRunFinished: '這一輪已經寫入了。要反悔就在這裡撤銷，要重來就清除結果。',
     whyRunStopped: '這一輪出錯停下了——原因寫在表格上方。',
     runFailedBanner: (message: string) => `這一輪停下了：${message}`,
@@ -910,6 +911,8 @@ export const zhHant: Messages = {
       unknownCount: '查不到',
       unfollowedCount: '已取關',
       restoredCount: '已重新關注',
+      unfollowedBanner: (n: number) => `這一輪取關了 ${n.toLocaleString('zh-Hant')} 個帳號。清掉結果之前都還可以撤銷。`,
+      restoredBanner: (n: number) => `重新關注了 ${n.toLocaleString('zh-Hant')} 個帳號——分組也回來了。`,
       readAt: (when) => `清單讀於 ${when}`,
       savedAt: (when) => `存於 ${when}`,
       noneInactive: (threshold, total) =>

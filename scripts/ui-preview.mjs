@@ -392,11 +392,11 @@ await page.getByRole('button', { name: 'Move all instead' }).click();
 await page.waitForSelector('text=To move', { timeout: 5000 });
 
 await page.getByRole('button', { name: /^Move \d/ }).click();
-await page.waitForSelector('text=Moved', { timeout: 10000 });
+await page.waitForSelector('.banner.ok', { timeout: 10000 });
 await shot('moved', { fullPage: true });
 await page.getByRole('button', { name: /^Undo this move/ }).click();
 await page.getByRole('button', { name: 'Confirm undo' }).click();
-await page.waitForSelector('text=Moved', { state: 'detached', timeout: 15000 });
+await page.waitForSelector('.banner.ok', { state: 'detached', timeout: 15000 });
 await page.waitForTimeout(300);
 await shot('undone', { fullPage: true });
 
@@ -465,7 +465,10 @@ await shot('follows-confirm');
 await page.getByRole('button', { name: /^Yes, unfollow/ }).click();
 await page.waitForSelector('.facet:has-text("Unfollowed")', { timeout: 20000 });
 await page.waitForSelector('button:has-text("Undo")', { timeout: 20000 });
-await page.locator('.facet', { hasText: 'Unfollowed' }).click();
+// 分面要自己切過去、成功橫幅要出現：以前這裡是 .click()，等於腳本自己把畫面撥回正確狀態，
+// 於是「做完之後主畫面變空表格」在截圖裡看不出來。
+await page.waitForSelector('.facet[aria-pressed="true"]:has-text("Unfollowed")', { timeout: 20000 });
+await page.waitForSelector('.banner.ok', { timeout: 20000 });
 await page.waitForTimeout(300);
 await shot('follows-unfollowed');
 
@@ -473,7 +476,7 @@ await page.getByRole('button', { name: /^Undo/ }).click();
 await page.getByRole('button', { name: 'Yes, follow them again' }).click();
 await page.waitForSelector('.facet:has-text("Followed again")', { timeout: 20000 });
 await page.waitForFunction(() => !document.querySelector('.spin'), null, { timeout: 20000 });
-await page.locator('.facet', { hasText: 'Followed again' }).click();
+await page.waitForSelector('.facet[aria-pressed="true"]:has-text("Followed again")', { timeout: 20000 });
 await page.waitForTimeout(300);
 await shot('follows-undone');
 

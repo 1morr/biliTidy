@@ -114,6 +114,7 @@ export const en = {
     footerMinutes: (n: number) => `≈${n} min`,
     nowOrganising: 'Now organising',
     whyNothingToWrite: 'No row is set to move or copy — pick a target on a row, or accept the suggestions.',
+    wroteBanner: (n: number) => `Done — ${n.toLocaleString('en-US')} videos written to the folders you picked.`,
     whyRunFinished: 'This run has been written. Undo it here, or clear the results to start again.',
     whyRunStopped: 'This run stopped with an error — the message is above the table.',
     // Shown on the prepare screen — usually because the run failed before it produced a single review row
@@ -1008,6 +1009,8 @@ export const en = {
       unknownCount: 'Could not check',
       unfollowedCount: 'Unfollowed',
       restoredCount: 'Followed again',
+      unfollowedBanner: (n: number) => `Unfollowed ${accounts(n)} in this run. Undo is available until you clear the results.`,
+      restoredBanner: (n: number) => `Followed ${accounts(n)} again — their groups came back too.`,
       readAt: (when: string) => `List read ${when}`,
       savedAt: (when: string) => `saved ${when}`,
       noneInactive: (threshold: number, total: number) =>

@@ -187,6 +187,14 @@ export function RunPage({
                   </div>
                 </div>
               )}
+              {job.phase === 'done' && counts.done > 0 && (
+                <div className="c-pad" style={{ paddingBottom: 0 }}>
+                  <div className="banner ok">
+                    <span className="dot" style={{ background: 'var(--ok)' }} />
+                    <span>{m.run.wroteBanner(counts.done)}</span>
+                  </div>
+                </div>
+              )}
               {lowConfPending > 0 && job.phase === 'review' && filter !== 'lowConfidence' && (
                 <div className="c-pad" style={{ paddingBottom: 0 }}>
                   <div className="banner warn">
@@ -216,7 +224,12 @@ export function RunPage({
             type="button"
             className="btn primary"
             disabled={job.phase !== 'review' || counts.move + counts.copy === 0 || blocked}
-            onClick={() => void job.execute({ mid, batchSize: settings.rate.moveBatchSize })}
+            onClick={() => {
+              void job.execute({ mid, batchSize: settings.rate.moveBatchSize }).then(() => {
+                // 寫完的列已經不符合原本的分面，表格會變空——切到剛產生的那一個
+                if (useJobStore.getState().rows.some((r) => r.status === 'done')) setFilter('done');
+              });
+            }}
           >
             <IconArrowRight size={14} />
             {m.run.executeLabel(counts.move, counts.copy)}

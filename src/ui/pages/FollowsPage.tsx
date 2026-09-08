@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import type { NavData } from '@/bilibili/http';
 import { canSelect } from '@/core/activity';
 import { downloadText, exportFilename, toCsv, uidList } from '@/core/exportRows';
-import { DEFAULT_FILTER, DEFAULT_SORT, filterRows, sortRows, type ReviewFilter, type SortSpec } from '@/core/followFilter';
+import {
+  DEFAULT_FILTER,
+  DEFAULT_SORT,
+  filterRows,
+  sortRows,
+  type ReviewFilter,
+  type SortSpec,
+  type StatusFacet,
+} from '@/core/followFilter';
 import type { FollowPhase } from '@/shared/types';
 import { IconCopy, IconDownload, IconSearch, IconUndo, IconUserMinus } from '../components/icons';
 import { useMessages } from '../hooks/useI18n';
@@ -68,6 +76,17 @@ export function FollowsPage({ nav }: { nav: NavData }) {
   const allShownSelected = selectable.length > 0 && selectable.every((r) => job.selected.has(r.entry.mid));
   const doneCount = job.rows.filter((r) => r.status === 'done').length;
   const failedCount = job.rows.filter((r) => r.status === 'failed' || r.status === 'restoreFailed').length;
+
+  /**
+   * 批次寫完之後，動過的那些列已經不符合目前的分面（預設是「安靜超過門檻」），
+   * 表格會變成空的，剛做完的事只剩左軌角落看得到。把分面切到剛產生的那一個。
+   * 用 stats 的前後差判斷，因為 runWrite 拿不到執行權或沒有目標時會直接 return，那時不該動畫面。
+   */
+  const writeThenShow = async (run: () => Promise<void>, key: 'unfollowed' | 'restored', facet: StatusFacet) => {
+    const before = useFollowJobStore.getState().stats[key];
+    await run();
+    if (useFollowJobStore.getState().stats[key] > before) setFilter((f) => ({ ...f, status: facet }));
+  };
   const n = selectedRows.length;
   const hasResults = job.rows.length > 0;
 
@@ -174,7 +193,7 @@ export function FollowsPage({ nav }: { nav: NavData }) {
             )}
           </div>
           <div className="c-body">
-            {(job.stopped || job.error) && (
+            {(job.stopped || job.error || job.stats.unfollowed > 0 || job.stats.restored > 0) && (
               <div className="c-pad" style={{ paddingBottom: 0 }}>
                 {job.stopped && (
                   <div className={job.stopped.reason === 'auth' ? 'banner error' : 'banner warn'}>
@@ -196,6 +215,19 @@ export function FollowsPage({ nav }: { nav: NavData }) {
                   <div className="banner error">
                     <span className="dot" style={{ background: 'var(--bad)' }} />
                     <span>{job.error}</span>
+                  </div>
+                )}
+                {/* 出錯與做成功可以同時成立（取關 12 個之後被風控擋下），所以兩條都畫，成功的排在後面 */}
+                {job.stats.unfollowed > 0 && (
+                  <div className="banner ok">
+                    <span className="dot" style={{ background: 'var(--ok)' }} />
+                    <span>{m.follows.review.unfollowedBanner(job.stats.unfollowed)}</span>
+                  </div>
+                )}
+                {job.stats.restored > 0 && (
+                  <div className="banner ok">
+                    <span className="dot" style={{ background: 'var(--ok)' }} />
+                    <span>{m.follows.review.restoredBanner(job.stats.restored)}</span>
                   </div>
                 )}
               </div>
@@ -237,7 +269,7 @@ export function FollowsPage({ nav }: { nav: NavData }) {
                 className="btn danger solid"
                 onClick={() => {
                   setConfirmUnfollow(false);
-                  void job.unfollow();
+                  void writeThenShow(() => job.unfollow(), 'unfollowed', 'done');
                 }}
               >
                 <IconUserMinus />
@@ -288,7 +320,7 @@ export function FollowsPage({ nav }: { nav: NavData }) {
                   className="btn danger"
                   onClick={() => {
                     setConfirmUndo(false);
-                    void job.restore();
+                    void writeThenShow(() => job.restore(), 'restored', 'restored');
                   }}
                 >
                   {m.follows.runbar.confirmUndo}
