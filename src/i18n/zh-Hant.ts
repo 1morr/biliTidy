@@ -100,6 +100,10 @@ export const zhHant: Messages = {
     nowOrganising: '正在整理',
     whyNothingToWrite: '沒有任何一列要搬或複製——在列上選一個目標，或採用建議。',
     wroteBanner: (n: number) => `完成——${n.toLocaleString('zh-Hant')} 支影片寫進你挑的收藏夾。`,
+    cancelledReadBanner: (done: number, total: number, days: number) =>
+      `已在 ${done} / ${total} 取消。抓到的影片詳情會在快取裡留 ${days} 天，重跑會直接沿用。`,
+    cancelledWriteBanner: (done: number, total: number) =>
+      `已在 ${done} / ${total} 取消。寫進去的那幾列標成完成，其餘還是待處理。`,
     whyRunFinished: '這一輪已經寫入了。要反悔就在這裡撤銷，要重來就清除結果。',
     whyRunStopped: '這一輪出錯停下了——原因寫在表格上方。',
     runFailedBanner: (message: string) => `這一輪停下了：${message}`,
@@ -873,6 +877,8 @@ export const zhHant: Messages = {
       stoppedRisk: (remaining, message) =>
         `Bilibili 開始限流（${message}），這一輪提前停下。還有 ${num(remaining)} 個帳號沒查；已查到的結果仍然有效。過一陣子再補查剩下的。`,
       writeStopped: (message, remaining) => `已停止：${message}。還有 ${num(remaining)} 個帳號沒有動到。`,
+      cancelledReadingList: (done, total) =>
+        `讀關注清單時取消（${done} / ${total}）。還沒開始查活躍度；之前跑過留在快取裡的結果仍然有效。`,
     },
 
     review: {

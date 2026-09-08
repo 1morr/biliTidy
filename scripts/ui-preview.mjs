@@ -200,7 +200,10 @@ await context.route(/api\.bilibili\.com\/x\/v3\/fav\/resource\/list/, (route) =>
     info: folders[0],
   }),
 );
-await context.route(/api\.bilibili\.com\/x\/web-interface\/wbi\/view\/detail/, (route) => {
+// 只有「取消分類」那一段會打開：其餘時候 mock 立刻回覆，快到按不到取消
+let slowDetail = false;
+await context.route(/api\.bilibili\.com\/x\/web-interface\/wbi\/view\/detail/, async (route) => {
+  if (slowDetail) await new Promise((r) => setTimeout(r, 400));
   const bvid = new URL(route.request().url()).searchParams.get('bvid') ?? '';
   const rich = bvid === 'BV1demo0001';
   json(route, {
@@ -245,7 +248,10 @@ await context.route(/api\.bilibili\.com\/x\/relation\/stat/, (route) =>
   json(route, { mid: 12345, following: follows.length, whisper: whispers.length, black: 0, follower: 12 }),
 );
 await context.route(/api\.bilibili\.com\/x\/relation\/tags/, (route) => json(route, TAGS));
-await context.route(/api\.bilibili\.com\/x\/relation\/followings/, (route) => {
+// 同 slowDetail：只有「取消讀關注清單」那一段打開
+let slowFollowings = false;
+await context.route(/api\.bilibili\.com\/x\/relation\/followings/, async (route) => {
+  if (slowFollowings) await new Promise((r) => setTimeout(r, 400));
   const pn = Number(new URL(route.request().url()).searchParams.get('pn') ?? '1');
   json(route, { list: follows.slice((pn - 1) * 50, pn * 50), re_version: 0, total: follows.length });
 });
@@ -281,7 +287,10 @@ await context.addCookies([{ name: 'bili_jct', value: 'preview-csrf', domain: '.b
 
 // 寫入類請求：不真的打出去，記下參數以便確認搬移／撤銷／取關的方向正確
 const writes = [];
-await context.route(/api\.bilibili\.com\/x\/v3\/fav\/resource\/(move|copy|batch-del)/, (route) => {
+// 同 slowDetail：只有「取消搬移」那一段打開
+let slowMove = false;
+await context.route(/api\.bilibili\.com\/x\/v3\/fav\/resource\/(move|copy|batch-del)/, async (route) => {
+  if (slowMove) await new Promise((r) => setTimeout(r, 400));
   const url = new URL(route.request().url());
   const form = new URLSearchParams(route.request().postData() ?? '');
   writes.push(
@@ -400,6 +409,19 @@ await page.keyboard.press('Escape');
 
 await page.getByLabel('Add as target: 繪畫 / 美圖').check();
 await page.getByLabel('Add as target: 遊戲實況').check();
+
+// 中途取消：畫面回到準備畫面，要留下一條說得出「停在哪、快取還在」的橫幅（不是什麼都沒發生）
+slowDetail = true;
+await page.getByRole('button', { name: 'Start classification' }).click();
+await page.waitForSelector('.gauge', { timeout: 20000 });
+await page.getByRole('button', { name: 'Cancel this run' }).click();
+await page.waitForSelector('.banner.warn', { timeout: 20000 });
+const cancelledText = (await page.locator('.banner.warn').first().textContent()).trim();
+console.log('cancelled banner:', cancelledText);
+if (!cancelledText.startsWith('Cancelled at')) errors.push(`cancelling a run should say where it stopped, got: ${cancelledText}`);
+await shot('run-cancelled', { fullPage: true });
+slowDetail = false;
+
 await page.getByRole('button', { name: 'Start classification' }).click();
 await page.waitForSelector('text=Review & execute', { timeout: 20000 });
 await page.waitForTimeout(300);
@@ -428,6 +450,30 @@ await page.waitForSelector('.banner.ok', { state: 'detached', timeout: 15000 });
 await page.waitForTimeout(300);
 await shot('undone', { fullPage: true });
 
+// 搬移跑到一半取消：列的狀態是對的，但畫面之前一個字都沒說。
+// 撤銷會把每一列的目標清掉，所以要先重新採用建議，主按鈕才會亮回來。
+await page.getByRole('button', { name: 'Accept all suggestions' }).click();
+slowMove = true;
+await page.getByRole('button', { name: /^Write changes|^Move \d|^Copy \d/ }).click();
+await page.getByRole('button', { name: 'Cancel this run' }).click();
+await page.waitForSelector('.banner.warn:has-text("Cancelled at")', { timeout: 20000 });
+slowMove = false;
+const cancelledWrite = (await page.locator('.banner.warn:has-text("Cancelled at")').first().textContent()).trim();
+console.log('cancelled write banner:', cancelledWrite);
+// 取消之後表格不可以是空的：上一輪把分面留在「已完成」，這一輪一列都沒寫成，那個分面就是空的
+const rowsAfterCancel = await page.locator('table.grid tbody tr').count();
+console.log('rows shown after a cancelled write:', rowsAfterCancel);
+if (rowsAfterCancel === 0) errors.push('a cancelled write left the review table empty');
+await shot('run-cancelled-write', { fullPage: true });
+// 收拾：真的寫進去了幾筆就撤銷回來（停得夠早的話一筆都沒有，那就沒有撤銷鈕）。
+// 橫幅留著不清，後面繁中那張正好也拍得到它。
+const undoBtn = page.getByRole('button', { name: /^Undo this move/ });
+if ((await undoBtn.count()) > 0) {
+  await undoBtn.click();
+  await page.getByRole('button', { name: 'Confirm undo' }).click();
+  await page.waitForTimeout(800);
+}
+
 // ══ 關注分頁 ══════════════════════════════════════════════════════════════
 await tab('Follows');
 await page.waitForSelector('.who', { timeout: 20000 });
@@ -435,6 +481,20 @@ await page.waitForSelector('text=Follows 48 accounts', { timeout: 10000 });
 await page.waitForTimeout(300);
 await shot('follows-prepare');
 await phone('follows-prepare-mobile');
+
+// 讀關注清單讀到一半取消：查活躍度那一段取消會留在審核表，這一段沒有結果可留，所以要自己說一句
+slowFollowings = true;
+await page.getByRole('button', { name: /^Read the list and check/ }).click();
+await page.waitForSelector('.gauge', { timeout: 10000 });
+await page.getByRole('button', { name: 'Cancel this run' }).click();
+await page.waitForSelector('.banner.warn', { timeout: 20000 });
+const followsCancelled = (await page.locator('.banner.warn').first().textContent()).trim();
+console.log('follows cancelled banner:', followsCancelled);
+if (!followsCancelled.startsWith('Cancelled while reading')) {
+  errors.push(`cancelling the follow list read should say so, got: ${followsCancelled}`);
+}
+await shot('follows-cancelled');
+slowFollowings = false;
 
 await page.getByRole('button', { name: /^Read the list and check/ }).click();
 await page.waitForSelector('.gauge', { timeout: 10000 });

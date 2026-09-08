@@ -115,6 +115,11 @@ export const en = {
     nowOrganising: 'Now organising',
     whyNothingToWrite: 'No row is set to move or copy — pick a target on a row, or accept the suggestions.',
     wroteBanner: (n: number) => `Done — ${n.toLocaleString('en-US')} videos written to the folders you picked.`,
+    // Shown on the prepare screen after a cancelled classification, and on the review table after a cancelled write
+    cancelledReadBanner: (done: number, total: number, days: number) =>
+      `Cancelled at ${done} / ${total}. Video details fetched so far stay cached for ${days} days, so running again re-uses them.`,
+    cancelledWriteBanner: (done: number, total: number) =>
+      `Cancelled at ${done} / ${total}. Rows already written show as done — the rest are still pending.`,
     whyRunFinished: 'This run has been written. Undo it here, or clear the results to start again.',
     whyRunStopped: 'This run stopped with an error — the message is above the table.',
     // Shown on the prepare screen — usually because the run failed before it produced a single review row
@@ -970,6 +975,8 @@ export const en = {
       stoppedRisk: (remaining: number, message: string) =>
         `Stopped early because Bilibili is rate-limiting requests (${message}). ${accounts(remaining)} have not been checked; the results so far are still valid. Try the rest in a while.`,
       writeStopped: (message: string, remaining: number) => `Stopped: ${message}. ${accounts(remaining)} were not touched.`,
+      cancelledReadingList: (done: number, total: number) =>
+        `Cancelled while reading the follow list (${done} / ${total}). Nothing has been checked yet; activity cached from earlier runs is still valid.`,
     },
 
     review: {

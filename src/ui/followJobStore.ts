@@ -33,6 +33,11 @@ interface FollowJobState {
   savedAt: number | null;
   /** 這一段（查活躍或取關）是什麼時候開始的；用來算已用時間與預估剩餘 */
   startedAt: number | null;
+  /**
+   * 讀關注清單讀到一半被取消時停在哪；下一次開跑就清掉。查活躍度與寫入不用這個欄位——
+   * 那兩條取消時回的是 `stopped`，部分結果照樣進審核。同樣**只存數字**，句子交給畫面組。
+   */
+  cancelled: { done: number; total: number } | null;
   stats: FollowStats;
 
   start: (input: { mid: number; settings: Settings; mode: 'missing' | 'all' }) => Promise<void>;
@@ -173,6 +178,7 @@ export const useFollowJobStore = create<FollowJobState>((set, get) => {
     fetchedAt: null,
     savedAt: null,
     startedAt: null,
+    cancelled: null,
     stats: EMPTY_STATS,
 
     async start({ mid, settings, mode }) {
@@ -194,6 +200,7 @@ export const useFollowJobStore = create<FollowJobState>((set, get) => {
         selected: new Set<number>(),
         savedAt: null,
         startedAt: Date.now(),
+        cancelled: null,
         stats: EMPTY_STATS,
       });
       const onWait: NonNullable<RetryOptions['onWait']> = ({ error, delayMs }) => {
@@ -249,10 +256,12 @@ export const useFollowJobStore = create<FollowJobState>((set, get) => {
       } catch (e) {
         if (!isCurrent()) return;
         const err = toAppError(e);
-        // 讀關注清單時取消：什麼都還沒有，回到準備畫面；其他錯誤留在錯誤畫面讓人看得到原因
+        // 讀關注清單時取消：什麼都還沒有，回到準備畫面（帶著停在哪的橫幅）；其他錯誤留在錯誤畫面讓人看得到原因
+        const progress = get().progress;
         set({
           phase: err.kind === 'aborted' ? 'idle' : 'error',
           error: err.kind === 'aborted' ? null : err.message,
+          cancelled: err.kind === 'aborted' && progress ? { done: progress.done, total: progress.total } : null,
           progress: null,
         });
       } finally {
@@ -369,6 +378,7 @@ export const useFollowJobStore = create<FollowJobState>((set, get) => {
         stopped: null,
         error: null,
         progress: null,
+        cancelled: null,
       });
     },
   };

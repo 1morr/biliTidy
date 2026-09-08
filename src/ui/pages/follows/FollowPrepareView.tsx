@@ -137,6 +137,13 @@ export function FollowPrepareView({
                 <span>{job.error}</span>
               </div>
             )}
+            {/* 讀關注清單讀到一半被取消：查活躍度那一段取消會留在審核表，這一段不會，所以要自己說 */}
+            {job.cancelled && (
+              <div className="banner warn">
+                <span className="dot" style={{ background: 'var(--warn)' }} />
+                <span>{m.follows.job.cancelledReadingList(job.cancelled.done, job.cancelled.total)}</span>
+              </div>
+            )}
             <ol className="steps">
               <li className="step">
                 <span className="k">1</span>

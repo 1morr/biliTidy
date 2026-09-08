@@ -25,6 +25,11 @@ interface JobState {
   savedAt: number | null;
   /** 這一段（分類或搬移）是什麼時候開始的；用來算已用時間與預估剩餘 */
   startedAt: number | null;
+  /**
+   * 上一輪被取消時停在哪；下一次開跑就清掉。**只存數字**——句子交給畫面依目前語言組，
+   * 存翻好的字串的話切換語言後橫幅還是舊語言（同 `followJobStore.ts` 的 `stoppedOf()`）。
+   */
+  cancelled: { done: number; total: number } | null;
 
   start: (input: {
     mid: number;
@@ -50,6 +55,11 @@ interface JobState {
 }
 
 const EMPTY_STATS: JobStats = { fetched: 0, cached: 0, aiCalls: 0, moved: 0, copied: 0, failed: 0, removed: 0, detailFailed: 0 };
+
+/** 取消時停在哪。進度還沒開始跳（第一個請求都還沒回來）就回 null，那一輪等於沒跑，橫幅也不必畫 */
+function stopPoint(progress: Progress | null): { done: number; total: number } | null {
+  return progress ? { done: progress.done, total: progress.total } : null;
+}
 
 let controller: AbortController | null = null;
 
@@ -108,7 +118,7 @@ export const useJobStore = create<JobState>((set, get) => {
     // 寫入流程會就地修改 row，這裡先複製一份給它，再以 onRow 回寫觸發重繪
     const working = s.rows.map((r) => ({ ...r }));
     const byBvid = new Map(working.map((r) => [r.bvid, r]));
-    set({ phase: 'moving', error: null, waitNote: null, rows: working, startedAt: Date.now() });
+    set({ phase: 'moving', error: null, waitNote: null, rows: working, startedAt: Date.now(), cancelled: null });
     const sync = () => {
       if (isCurrent()) set({ rows: Array.from(byBvid.values()) });
     };
@@ -133,7 +143,11 @@ export const useJobStore = create<JobState>((set, get) => {
       if (!isCurrent()) return; // 同上：被取代的那一輪不可以覆蓋新任務的 phase
       const err = toAppError(e);
       sync();
-      set({ phase: err.kind === 'aborted' ? 'review' : 'error', error: err.kind === 'aborted' ? null : err.message });
+      set({
+        phase: err.kind === 'aborted' ? 'review' : 'error',
+        error: err.kind === 'aborted' ? null : err.message,
+        cancelled: err.kind === 'aborted' ? stopPoint(get().progress) : null,
+      });
     } finally {
       if (isCurrent()) {
         controller = null;
@@ -157,6 +171,7 @@ export const useJobStore = create<JobState>((set, get) => {
     targetIds: [],
     savedAt: null,
     startedAt: null,
+    cancelled: null,
 
     async start({ mid, source, sourceDescription, targets, settings, limit }) {
       if (!claimJob('organise')) return;
@@ -179,6 +194,7 @@ export const useJobStore = create<JobState>((set, get) => {
         targetIds: targets.map((target) => target.id),
         savedAt: null,
         startedAt: Date.now(),
+        cancelled: null,
       });
       const run = () =>
         runOrganize(
@@ -219,7 +235,11 @@ export const useJobStore = create<JobState>((set, get) => {
       } catch (e) {
         if (!isCurrent()) return;
         const err = toAppError(e);
-        set({ phase: err.kind === 'aborted' ? 'idle' : 'error', error: err.kind === 'aborted' ? null : err.message });
+        set({
+          phase: err.kind === 'aborted' ? 'idle' : 'error',
+          error: err.kind === 'aborted' ? null : err.message,
+          cancelled: err.kind === 'aborted' ? stopPoint(get().progress) : null,
+        });
       } finally {
         if (isCurrent()) {
           controller = null;
@@ -344,6 +364,7 @@ export const useJobStore = create<JobState>((set, get) => {
         startedAt: null,
         error: null,
         progress: null,
+        cancelled: null,
       });
     },
   };

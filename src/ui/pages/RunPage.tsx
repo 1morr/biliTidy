@@ -4,6 +4,7 @@ import { planFlow } from '@/core/flow';
 import { effectiveDescription } from '@/core/folderStore';
 import type { BatchRecord } from '@/core/organizer';
 import { planOf } from '@/core/plan';
+import { DETAIL_TTL_DAYS } from '@/core/settings';
 import type { Messages } from '@/i18n';
 import type { JobPhase } from '@/shared/types';
 import { FolderCover } from '../components/FolderCover';
@@ -195,6 +196,14 @@ export function RunPage({
                   </div>
                 </div>
               )}
+              {job.cancelled && job.phase === 'review' && (
+                <div className="c-pad" style={{ paddingBottom: 0 }}>
+                  <div className="banner warn">
+                    <span className="dot" style={{ background: 'var(--warn)' }} />
+                    <span>{m.run.cancelledWriteBanner(job.cancelled.done, job.cancelled.total)}</span>
+                  </div>
+                </div>
+              )}
               {lowConfPending > 0 && job.phase === 'review' && filter !== 'lowConfidence' && (
                 <div className="c-pad" style={{ paddingBottom: 0 }}>
                   <div className="banner warn">
@@ -226,8 +235,11 @@ export function RunPage({
             disabled={job.phase !== 'review' || counts.move + counts.copy === 0 || blocked}
             onClick={() => {
               void job.execute({ mid, batchSize: settings.rate.moveBatchSize }).then(() => {
-                // 寫完的列已經不符合原本的分面，表格會變空——切到剛產生的那一個
-                if (useJobStore.getState().rows.some((r) => r.status === 'done')) setFilter('done');
+                // 寫完的列已經不符合原本的分面，表格會變空——切到剛產生的那一個。
+                // 取消得夠早、一列都沒寫成的話「已完成」本身就是空的，那就退回「全部」。
+                const st = useJobStore.getState();
+                if (st.rows.some((r) => r.status === 'done')) setFilter('done');
+                else if (st.cancelled) setFilter('all');
               });
             }}
           >
@@ -386,6 +398,15 @@ export function RunPage({
                   <button type="button" className="link spacer" onClick={onOpenSettings}>
                     {m.run.openSettings}
                   </button>
+                </div>
+              </div>
+            )}
+            {/* 分類跑到一半被取消：畫面直接回到這裡，不說一句話的話看起來像什麼都沒發生 */}
+            {job.cancelled && !reviewing && (
+              <div className="c-pad" style={{ paddingBottom: 0 }}>
+                <div className="banner warn">
+                  <span className="dot" style={{ background: 'var(--warn)' }} />
+                  <span>{m.run.cancelledReadBanner(job.cancelled.done, job.cancelled.total, DETAIL_TTL_DAYS)}</span>
                 </div>
               </div>
             )}
