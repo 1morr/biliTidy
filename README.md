@@ -114,6 +114,8 @@ Favourites:
   will make; the Organise page recomputes it for the actual number of videos.
 - **Deleting a folder is not implemented.** On Bilibili that destroys the videos
   inside it and cannot be undone.
+- **Download the run as a CSV** — every row, with what the model suggested next
+  to what you chose, its reason and the fields it used.
 
 Follows:
 

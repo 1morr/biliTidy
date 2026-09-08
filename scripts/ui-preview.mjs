@@ -469,6 +469,22 @@ await shot('review-copy', { fullPage: true });
 await page.getByRole('button', { name: 'Move all instead' }).click();
 await page.waitForSelector('text=To move', { timeout: 5000 });
 
+// 匯出這一輪的分類結果：整張表，不是只有選了目標的那幾列
+const rowsInTable = await page.locator('table.grid tbody tr').count();
+const [download] = await Promise.all([
+  page.waitForEvent('download', { timeout: 15000 }),
+  page.getByRole('button', { name: /^Download CSV/ }).click(),
+]);
+const csvPath = path.join(out, 'classified-videos.csv');
+await download.saveAs(csvPath);
+const csvLines = readFileSync(csvPath, 'utf8').trim().split('\r\n');
+console.log(`downloaded ${download.suggestedFilename()}: ${csvLines.length - 1} rows for ${rowsInTable} in the table`);
+if (!/^classified-videos-\d{8}-\d{6}\.csv$/.test(download.suggestedFilename()))
+  errors.push(`unexpected export filename: ${download.suggestedFilename()}`);
+if (!csvLines[0].includes('AI suggested') || !csvLines[0].includes('You chose'))
+  errors.push(`the export should record both the suggestion and the choice, header was: ${csvLines[0]}`);
+if (csvLines.length - 1 !== rowsInTable) errors.push(`exported ${csvLines.length - 1} rows but the table shows ${rowsInTable}`);
+
 await page.getByRole('button', { name: /^Move \d/ }).click();
 await page.waitForSelector('.banner.ok', { timeout: 10000 });
 await shot('moved', { fullPage: true });

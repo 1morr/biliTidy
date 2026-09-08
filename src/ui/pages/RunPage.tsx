@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { estimateRun } from '@/core/estimate';
 import { planFlow } from '@/core/flow';
+import { downloadText, exportFilename, toReviewCsv } from '@/core/exportRows';
 import { effectiveDescription } from '@/core/folderStore';
 import type { BatchRecord } from '@/core/organizer';
 import { planOf } from '@/core/plan';
@@ -8,7 +9,7 @@ import { DETAIL_TTL_DAYS } from '@/core/settings';
 import type { Messages } from '@/i18n';
 import type { JobPhase } from '@/shared/types';
 import { FolderCover } from '../components/FolderCover';
-import { IconArrowRight, IconCheck, IconSearch, IconSparkle } from '../components/icons';
+import { IconArrowRight, IconCheck, IconDownload, IconSearch, IconSparkle } from '../components/icons';
 import { ProgressBar, ProgressPanel } from '../components/ProgressPanel';
 import { ReviewTable } from '../components/ReviewTable';
 import { TargetFolderTable } from '../components/TargetFolderTable';
@@ -100,6 +101,17 @@ export function RunPage({
   const moving = job.phase === 'moving';
   const jobTargets = folders.filter((f) => job.targetIds.includes(f.id));
   const jobSource = folders.find((f) => f.id === job.sourceId) ?? null;
+  // 匯出整張表而不是「你選了目標的那些」：使用者要的是這一輪的完整紀錄，
+  // 包含 AI 建議了什麼、你決定不搬的是哪幾支、哪幾支已經失效
+  const downloadReviewCsv = () =>
+    downloadText(
+      exportFilename('review'),
+      toReviewCsv(job.rows, job.sourceTitle, (id) => folders.find((f) => f.id === id)?.title, {
+        headers: m.run.csv.headers,
+        yes: m.run.csv.yes,
+      }),
+      'text/csv;charset=utf-8',
+    );
 
   const limit = runScope.mode === 'latest' ? runScope.count : undefined;
   const planned = source ? (limit ? Math.min(limit, source.mediaCount) : source.mediaCount) : 0;
@@ -331,6 +343,16 @@ export function RunPage({
               {m.run.retryFailed}
             </button>
           )}
+          <button
+            type="button"
+            className="btn"
+            disabled={job.rows.length === 0}
+            title={m.run.downloadCsvHint}
+            onClick={downloadReviewCsv}
+          >
+            <IconDownload />
+            {m.run.downloadCsv(job.rows.length)}
+          </button>
           <span className="read-inline">
             <button type="button" className="btn quiet" onClick={() => setShowSetup(true)}>
               {m.run.changeSettingsRerun}

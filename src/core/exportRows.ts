@@ -1,4 +1,4 @@
-import type { FollowRow } from '@/shared/types';
+import type { FollowRow, ReviewRow } from '@/shared/types';
 import { daysInactive } from './activity';
 
 /**
@@ -68,13 +68,101 @@ export function toCsv(
         .join(','),
     );
   }
-  return `﻿${lines.join('\r\n')}\r\n`;
+  return `\ufeff${lines.join('\r\n')}\r\n`;
 }
 
-export function exportFilename(kind: 'uids' | 'csv', now = new Date()): string {
+export interface ReviewCsvLabels {
+  headers: {
+    bvid: string;
+    title: string;
+    source: string;
+    suggested: string;
+    chosen: string;
+    keepInPlace: string;
+    lowConfidence: string;
+    stale: string;
+    reason: string;
+    basis: string;
+    status: string;
+    error: string;
+  };
+  /** 是／否欄位為真時填的字；為假時留空——CSV 讀起來一眼看得出哪幾列有標記 */
+  yes: string;
+}
+
+/**
+ * 整理結果的存檔：這次 AI 把哪支影片分到哪個夾、理由是什麼、你最後選了什麼。
+ *
+ * 兩件與關注那半邊不同的事：
+ * - **每一列都寫出去**，不是只寫「你勾的」。關注匯出的是要餵回別的工具的名單、等同一次批次，
+ *   所以有 `confirmedOnly()` 那道防線；這份檔案不會被拿去執行任何寫入，失效影片與你決定不搬的列
+ *   一起留著才是完整紀錄。
+ * - `status` 直接寫 `ReviewStatus` 的原字串、不翻譯。CSV 是給工具與往後的自己讀的，穩定的機器值
+ *   比畫面上的句子有用，而且不必跟 `ReviewTable` 那個「done ＋ keepSource ＝ 已複製」的組合邏輯
+ *   維持同步——那些條件在這裡是各自獨立的欄位。
+ */
+export function toReviewCsv(
+  rows: readonly ReviewRow[],
+  sourceTitle: string,
+  folderNameOf: (id: number) => string | undefined,
+  labels: ReviewCsvLabels,
+): string {
+  const h = labels.headers;
+  const names = (ids: readonly number[]) => ids.map((id) => folderNameOf(id) ?? String(id)).join(' / ');
+  const flag = (on: boolean | undefined) => (on ? labels.yes : '');
+  const lines = [
+    [
+      h.bvid,
+      h.title,
+      h.source,
+      h.suggested,
+      h.chosen,
+      h.keepInPlace,
+      h.lowConfidence,
+      h.stale,
+      h.reason,
+      h.basis,
+      h.status,
+      h.error,
+    ]
+      .map(csvCell)
+      .join(','),
+  ];
+  for (const r of rows) {
+    lines.push(
+      [
+        r.bvid,
+        r.title,
+        sourceTitle,
+        names(r.suggested),
+        names(r.chosen),
+        flag(r.keepSource),
+        flag(r.lowConfidence),
+        flag(r.invalid),
+        r.reason,
+        (r.basis ?? []).join(' / '),
+        r.status,
+        r.error ?? '',
+      ]
+        .map(csvCell)
+        .join(','),
+    );
+  }
+  return `\ufeff${lines.join('\r\n')}\r\n`;
+}
+
+export type ExportKind = 'uids' | 'csv' | 'review';
+
+const FILENAMES: Record<ExportKind, (stamp: string) => string> = {
+  uids: (s) => `inactive-uids-${s}.txt`,
+  csv: (s) => `inactive-accounts-${s}.csv`,
+  review: (s) => `classified-videos-${s}.csv`,
+};
+
+export function exportFilename(kind: ExportKind, now = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-  return kind === 'uids' ? `inactive-uids-${stamp}.txt` : `inactive-accounts-${stamp}.csv`;
+  return FILENAMES[kind](stamp);
 }
 
 export function downloadText(filename: string, text: string, mime = 'text/plain;charset=utf-8'): void {
