@@ -3,10 +3,10 @@
 本文記錄專案的架構決策與 Bilibili／OpenAI 相容端點的查證結果，供後續維護參考。
 第 1–10 節來自 biliFavOrg（整理收藏；實測日期 2026-08-25，另有 2026-08-29／08-31 的覆測，數據在 [research/](research/)），
 第 11–17 節來自 biliFollowCleaner（清理關注；實測日期 2026-09-05，在一個關注 2221 個帳號的真實帳號上以登入態 `fetch` 唯讀呼叫）。
-合併時刻意**不改前身的節號**——程式碼註解與 CLAUDE.md 都以節號引用本文；合併本身的決定寫在 [1.1](#11-兩個前身合併成一個)。
+合併時刻意**不改前身的節號**——程式碼註解與 AGENTS.md 都以節號引用本文；合併本身的決定寫在 [1.1](#11-兩個前身合併成一個)。
 
 **引用慣例**：其他文件與程式碼註解以節號指向本文（例如「見 `docs/design.md` 7」）。
-改節號時一併更新引用，`grep -rn "design\.md" src docs CLAUDE.md README.md` 找得到全部。
+改節號時一併更新引用，`grep -rn "design\.md" . --exclude-dir={node_modules,.output,.wxt,.git}` **掃全 repo** 才找得到全部（舊版只掃 `src docs CLAUDE.md README.md`，漏掉過 `PRODUCT.md` 與 `.oxlintrc.json`）。
 
 ## 目錄
 
@@ -462,7 +462,7 @@ session storage 那份 id 一併刪掉，不留 fallback。
 - **模型回覆的理由偶爾是簡體**（「标签含绝区零」），system prompt 已經要求繁體。
   先觀察，不急著為此加後處理。
 
-- **關注的寫入端點沒有在真實帳號上實測**：`relation/modify` act 2／4、`batch/modify` act 1、`tags/addUsers` 含 `-10` 都只依文檔與關注管理器腳本的用法實作，`npm run ui-preview` 只驗證了送出的參數。第一次真跑請照 `CLAUDE.md` 的 L4 清單挑 1–2 個帳號驗收。
+- **關注的寫入端點沒有在真實帳號上實測**：`relation/modify` act 2／4、`batch/modify` act 1、`tags/addUsers` 含 `-10` 都只依文檔與關注管理器腳本的用法實作，`npm run ui-preview` 只驗證了送出的參數。第一次真跑請照 `AGENTS.md` 的 L4 清單挑 1–2 個帳號驗收。
 - 取關一個「帳號已註銷」的關注會不會回 `22013`：文檔只說 act 1／5 不能對已註銷帳號操作。目前任何非 0 code 都當失敗顯示原因。
 - 悄悄關注超過 50 個時 `whispers` 的分頁是否真的照 `pn` 翻：實測帳號沒有悄悄關注。
 - 是否上架 Chrome 線上應用程式商店：未決定。

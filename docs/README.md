@@ -7,13 +7,12 @@
 | [how-it-works.md](how-it-works.md) | **按下去之後發生什麼事** | 使用者看得到的行為變了 |
 | [design.md](design.md) | **為什麼這樣做**、B 站與 AI 端點的 API 查證（1–10 整理收藏、11–17 清理關注） | 做了取捨、否決了某個方案、量到 API 的新事實 |
 | [research/](research/) | **實測數據** | 跑了一次量測，不管結論是什麼 |
-| [reviews/](reviews/) | **跑過一次審查發現了什麼**：問題清單、維度分數、標竿對照 | 做了一次完整審查（`/app-review`） |
 | [../CHANGELOG.md](../CHANGELOG.md) | **改了什麼** | 每一次行為變更 |
 | [../PRODUCT.md](../PRODUCT.md) | **這是給誰、做什麼、哪些規則不能動** | 產品定位或不可變規則變了 |
 | [../DESIGN.md](../DESIGN.md) | **長什麼樣子**：token、元件、版面規則 | 視覺系統變了 |
 
 另外兩份不在這裡：[README](../README.md) 是給還沒安裝的人看的入口，
-[CLAUDE.md](../CLAUDE.md) 是給 AI 代理的施工守則（哪裡有地雷、改動要同步什麼）。
+[AGENTS.md](../AGENTS.md) 是給 AI 代理的施工守則（`CLAUDE.md` 只剩一行指過來）（哪裡有地雷、改動要同步什麼）。
 
 ## research/
 
@@ -24,7 +23,7 @@
 | [wbi-test-vector.md](research/wbi-test-vector.md) | WBI 簽名的常數與測試向量（`src/bilibili/wbi.test.ts` 的來源） |
 
 新增實測時照 `<主題>-eval-<YYYY-MM>.md` 命名，並在上表加一列。
-方法與判讀門檻（±5 個百分點內不算差異）寫在 [CLAUDE.md 的測試階梯 L5](../CLAUDE.md#l5-分類品質實測改-prompt資料來源換模型時)。
+方法與判讀門檻（±5 個百分點內不算差異）寫在 [AGENTS.md 的測試階梯 L5](../AGENTS.md#l5-分類品質實測改-prompt資料來源換模型時)。
 
 ## 程式碼地圖
 
@@ -49,14 +48,5 @@ scripts/          gen-icons、mock-ai、smoke、ui-preview、quickfav-preview
 
 依賴方向是 `ui → core → {bilibili, ai, net, shared}`；`bilibili`／`ai`／`net` 是葉節點，不 import `core`。
 
-同一組規則有多個呈現的地方（改一個就要改全部，各自有測試）：
-
-| 規則 | 單一來源 | 讀它的地方 |
-| --- | --- | --- |
-| 這份設定實際會怎麼跑 | `core/plan.ts` 的 `planOf()` | estimate、flow、promptPreview、organizer、quickFav、三個 UI 分頁 |
-| 這次會打幾次請求（整理） | `core/estimate.ts` | 設定頁成本卡、整理頁 |
-| 這次會走哪幾步 | `core/flow.ts` | 整理頁「看這次會做什麼」 |
-| 會送出什麼內容 | `core/promptPreview.ts` | 設定頁 prompt 預覽 |
-| 組 prompt → 重試 → 解析 → 換回 media_id | `core/classify.ts` 的 `classify()` | 整理流程、影片頁「智慧收藏」 |
-| 關注這一列能不能被勾選 | `core/activity.ts` 的 `canSelect()` | 關注表格、followJobStore、匯出前的 `confirmedOnly()` |
-| 兩種任務一次只跑一個 | `ui/jobGuard.ts` | 兩個 jobStore、兩頁的主按鈕 |
+同一組規則有多個呈現的地方（`planOf()`、`canSelect()`、`jobGuard` 這些「只准有一份實作」的判斷），
+完整對照表在 [AGENTS.md](../AGENTS.md) 的「單一來源」一節——這裡不再複製一份，兩份會漂。
