@@ -12,7 +12,7 @@
 | [../DESIGN.md](../DESIGN.md) | **長什麼樣子**：token、元件、版面規則 | 視覺系統變了 |
 
 另外兩份不在這裡：[README](../README.md) 是給還沒安裝的人看的入口，
-[AGENTS.md](../AGENTS.md) 是給 AI 代理的施工守則（`CLAUDE.md` 只剩一行指過來）（哪裡有地雷、改動要同步什麼）。
+[AGENTS.md](../AGENTS.md) 是給 AI 代理的施工守則（哪裡有地雷、改動要同步什麼）。
 
 ## research/
 

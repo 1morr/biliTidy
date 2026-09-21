@@ -595,7 +595,7 @@ export const zhHant: Messages = {
     verified: '已驗證',
     testingVision: '測試中…',
     testVision: '測試視覺',
-    doesItMatchQuestion: '圖片是「深色圓角方塊、白色勾號、下面一條帶圓形播放頭的粉色進度條」，描述對得上嗎？',
+    doesItMatchQuestion: '圖片是「深色圓角方塊，裡面三條橫向短條，由上到下是黃、粉、藍」，描述對得上嗎？',
     matchesEnable: '對得上，啟用',
     visionEnabled: '已啟用視覺模式。',
     doesntMatch: '對不上',

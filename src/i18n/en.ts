@@ -664,7 +664,7 @@ export const en = {
     testingVision: 'Testing…',
     testVision: 'Test vision',
     doesItMatchQuestion:
-      'The image is a dark rounded square with a white tick mark and a pink progress bar with a round knob — does the description match it?',
+      'The image is a dark rounded square with three short horizontal bars — yellow, pink and blue from top to bottom — does the description match it?',
     matchesEnable: 'It matches, enable',
     visionEnabled: 'Vision mode enabled.',
     doesntMatch: "Doesn't match",

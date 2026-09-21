@@ -29,17 +29,16 @@ function svg(size: number, className: string | undefined, children: React.ReactN
 }
 
 /**
- * 品牌記號：一塊影片黑的瓦片，上面是「先審核」的勾，下面是走到一半的粉色進度軌與播放頭——
+ * 品牌記號：一塊影片黑的瓦片，上面三條飄過的彈幕——黃、粉、藍取自介面的彈幕色板，長短與起點錯開——
  * 與工具列圖示（`public/icon/icon.svg`，由 `scripts/gen-icons.mjs` 轉成 PNG）同一個符號、同一組座標。
  */
 export function IconBrand({ size = 18, className }: Props) {
   return (
     <svg width={size} height={size} viewBox="0 0 128 128" aria-hidden="true" className={className}>
       <rect x="4" y="4" width="120" height="120" rx="28" fill="#15161a" stroke="#3a3d46" strokeWidth={6} />
-      <path d="M34 66 L56 88 L96 40" fill="none" stroke="#f2f3f5" strokeWidth={16} strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="24" y="100" width="80" height="10" rx="5" fill="#33363e" />
-      <rect x="24" y="100" width="54" height="10" rx="5" fill="#ff5c8d" />
-      <circle cx="78" cy="105" r="12" fill="#ff5c8d" />
+      <rect x="20" y="31" width="54" height="16" rx="8" fill="#ffd302" />
+      <rect x="46" y="56" width="62" height="16" rx="8" fill="#ff5c8d" />
+      <rect x="28" y="81" width="42" height="16" rx="8" fill="#89d5ff" />
     </svg>
   );
 }

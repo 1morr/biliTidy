@@ -3,7 +3,7 @@ import { blobToDataUrl } from '@/shared/blob';
 import type { AiSettings } from '@/shared/types';
 import { chatCompletion, chatOptionsFrom, type ChatResult } from './client';
 
-/** 用擴充功能自己的圖示當測試圖（粉色圓底＋白色資料夾） */
+/** 用擴充功能自己的圖示當測試圖（深色瓦片上三條黃、粉、藍的彈幕；確認題在 `connection.doesItMatchQuestion`） */
 export async function loadTestImageDataUrl(): Promise<string> {
   const res = await fetch(browser.runtime.getURL('/icon/128.png'));
   const blob = await res.blob();
