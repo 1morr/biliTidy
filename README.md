@@ -14,8 +14,8 @@ can be undone.
 **English** · [繁體中文](README.zh-Hant.md)
 
 biliTidy is the merge of two sibling extensions by the same author —
-[biliFavOrg](https://github.com/1morr/biliFavOrg) (favourites) and
-[biliFollowCleaner](https://github.com/1morr/biliFollowCleaner) (follows). They
+biliFavOrg (favourites) and biliFollowCleaner (follows), both earlier private
+projects. They
 did the same kind of work — read your Bilibili data through the login you
 already have, lay it out as a review table with the evidence on every row, let
 you tick and confirm, execute in batch, undo — so they now share one toolbar
@@ -177,9 +177,8 @@ The in-depth docs are written in Traditional Chinese.
 | [PRODUCT.md](PRODUCT.md) / [DESIGN.md](DESIGN.md) | Who it is for and what must not change / the visual system |
 | [CHANGELOG.md](CHANGELOG.md) | What changed |
 
-Merged from [1morr/biliFavOrg](https://github.com/1morr/biliFavOrg) and
-[1morr/biliFollowCleaner](https://github.com/1morr/biliFollowCleaner); their
-histories live on in their own repositories.
+Merged from the author's earlier private extensions biliFavOrg and
+biliFollowCleaner — this repository is where their combined history continues.
 
 ## License
 

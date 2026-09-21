@@ -11,8 +11,8 @@
 
 [English](README.md) · **繁體中文**
 
-biliTidy 是同一位作者的兩個擴充功能合併而成：[biliFavOrg](https://github.com/1morr/biliFavOrg)（收藏夾）與
-[biliFollowCleaner](https://github.com/1morr/biliFollowCleaner)（關注）。它們做的是同一種事——用瀏覽器裡既有的登入態讀你的
+biliTidy 是同一位作者的兩個擴充功能合併而成：biliFavOrg（收藏夾）與
+biliFollowCleaner（關注），兩者都是更早的 private 專案。它們做的是同一種事——用瀏覽器裡既有的登入態讀你的
 B 站資料，攤成一張每一列都帶著證據的審核表，讓你勾選、確認、批次執行、可撤銷——差別只在對象是收藏夾還是關注清單。
 所以現在是一個工具列圖示、一份設定、一把限速器、同一套外觀。在你按下按鈕之前，什麼都不會被搬動、沒有人會被取關。
 
@@ -126,8 +126,7 @@ npm run build      # 產出 .output/chrome-mv3
 | [PRODUCT.md](PRODUCT.md) / [DESIGN.md](DESIGN.md) | 給誰用、哪些規則不能動 / 視覺系統 |
 | [CHANGELOG.md](CHANGELOG.md) | 改了什麼 |
 
-由 [1morr/biliFavOrg](https://github.com/1morr/biliFavOrg) 與 [1morr/biliFollowCleaner](https://github.com/1morr/biliFollowCleaner)
-合併而來；兩者各自的歷史留在原本的 repo。
+由作者更早的兩個 private 擴充功能 biliFavOrg 與 biliFollowCleaner 合併而來——合併後的歷史在這個 repo 繼續。
 
 ## 授權
 
