@@ -13,7 +13,6 @@ const out = path.resolve('.output/ui');
 const review = path.resolve('.impeccable/review');
 mkdirSync(out, { recursive: true });
 mkdirSync(review, { recursive: true });
-const png = readFileSync(path.join(ext, 'icon/128.png'));
 
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
@@ -173,7 +172,30 @@ await context.route(/api\.bilibili\.com\/x\/web-interface\/nav/, (route) =>
     },
   }),
 );
-await context.route(/hdslb\.com/, (route) => route.fulfill({ status: 200, contentType: 'image/png', body: png }));
+// 封面與頭像：每個 URL 產生一張自己的圖。
+// 這裡曾經對所有 hdslb.com 一律回傳擴充自己的 icon（`png`），結果 README 的截圖裡每一支影片的封面、
+// 每一個 UP 的頭像都是同一個標誌鋪滿，看起來像圖片載入失敗。內容是假的沒關係，但不能假到像壞掉。
+const stand = (url) => {
+  let h = 2166136261;
+  for (let i = 0; i < url.length; i++) {
+    h ^= url.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  const hue = h % 360;
+  const face = /\/face\//.test(url);
+  const [w, ht] = face ? [96, 96] : [320, 200];
+  // 兩個色相錯開的暗色漸層 ＋ 一塊偏移的形狀，縮圖大小下才看得出彼此不同
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${ht}" width="${w}" height="${ht}">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="hsl(${hue} 34% 30%)"/><stop offset="1" stop-color="hsl(${(hue + 55) % 360} 30% 15%)"/>
+</linearGradient></defs>
+<rect width="${w}" height="${ht}" fill="url(#g)"/>
+<circle cx="${(h >> 4) % w}" cy="${(h >> 12) % ht}" r="${ht / 3}" fill="hsl(${(hue + 180) % 360} 40% 60%)" opacity="0.16"/>
+</svg>`;
+};
+await context.route(/hdslb\.com/, (route) =>
+  route.fulfill({ status: 200, contentType: 'image/svg+xml', body: stand(route.request().url()) }),
+);
 
 // ---- 收藏夾 ----
 await context.route(/api\.bilibili\.com\/x\/v3\/fav\/folder\/created\/list/, (route) =>
@@ -259,6 +281,23 @@ await context.route(/api\.bilibili\.com\/x\/relation\/whispers/, (route) => {
   const pn = Number(new URL(route.request().url()).searchParams.get('pn') ?? '1');
   json(route, { list: pn === 1 ? whispers : [], re_version: 0 });
 });
+// 「最後一支投稿」的標題。原本是一句說明文字（「最後一支投稿的標題會顯示在這裡」），
+// 那會直接出現在 README 的截圖上，看起來像沒做完。這些是安靜下來的帳號最後會發的那種東西。
+const LAST_TITLES = [
+  '年度總結：這一年我做了什麼',
+  '搬家了，順便聊聊接下來的打算',
+  '【雜談】關於最近的一些想法',
+  '這可能是最後一期了',
+  '停更說明',
+  '新設備開箱，順便測一下畫質',
+  '回答你們問最多的十個問題',
+  '【教學】從零開始的第一步',
+  '好久沒唱歌了',
+  '做了一道很費工的菜',
+  '三週年，謝謝還在的各位',
+  '聊聊我為什麼不更新',
+];
+
 // 停下的情境：第 failAfter 次之後的查詢回 -101（未登入），整輪立刻停下、橫幅、剩下的列鎖著
 let lookups = 0;
 let failAfter = Number.POSITIVE_INFINITY;
@@ -275,7 +314,7 @@ await context.route(/api\.bilibili\.com\/x\/space\/wbi\/arc\/search/, (route) =>
           {
             aid: mid,
             bvid: `BV1${String(mid).slice(-6)}xyz`,
-            title: `【${mid}】最後一支投稿的標題會顯示在這裡`,
+            title: LAST_TITLES[mid % LAST_TITLES.length],
             created: now - age * DAY,
           },
         ];
