@@ -13,14 +13,14 @@ can be undone.
 
 **English** · [繁體中文](README.zh-Hant.md)
 
-biliTidy is the merge of two sibling extensions by the same author —
-biliFavOrg (favourites) and biliFollowCleaner (follows), both earlier private
-projects. They
-did the same kind of work — read your Bilibili data through the login you
-already have, lay it out as a review table with the evidence on every row, let
-you tick and confirm, execute in batch, undo — so they now share one toolbar
-icon, one settings page, one rate limiter and one look. Nothing moves and
-nobody is unfollowed until you press the button.
+Bilibili gives you favourite folders but no help deciding which video belongs
+where, so a backlog of hundreds ends up in the default folder for good. It
+gives you a follow list but no view of who has stopped uploading, so the list
+only ever grows. biliTidy does the deciding for you and leaves the confirming
+to you: it reads your data through the login you already have, lays it out as
+a review table with the evidence on every row, lets you tick and confirm,
+executes in batch, and can undo. Nothing moves and nobody is unfollowed until
+you press the button.
 
 | Organise favourites | Clean up follows |
 |---|---|
@@ -177,8 +177,11 @@ The in-depth docs are written in Traditional Chinese.
 | [PRODUCT.md](PRODUCT.md) / [DESIGN.md](DESIGN.md) | Who it is for and what must not change / the visual system |
 | [CHANGELOG.md](CHANGELOG.md) | What changed |
 
-Merged from the author's earlier private extensions biliFavOrg and
-biliFollowCleaner — this repository is where their combined history continues.
+biliTidy is the merge of two earlier private extensions by the same author,
+biliFavOrg (favourites) and biliFollowCleaner (follows). They did the same
+kind of work, so they now share one toolbar icon, one settings page, one rate
+limiter and one look; this repository is where their combined history
+continues.
 
 ## License
 
